@@ -28,8 +28,12 @@ private val DarkColorScheme = darkColorScheme(
 
     /* ===== 4. 主品牌色（Mini Button 文字用） ===== */
     primary          = Color(0xFF8080FF),   // #8080FF
-    primaryContainer = Color(0xFF14161D),
+    primaryContainer = Color(0xFF4C4C7D),
     onPrimary        = Color(0xFFE6E6E6),   // 白字／淺灰字
+
+    secondary = Color(0xFF00be86), // Progress Bar, Button
+    secondaryContainer = Color(0xFF2B2E3A),
+    onSecondary = Color(0xFFE6E6E6),
 
     /* ===== 5. Tint & 其他 ===== */
     surfaceTint      = Color(0xFF8080FF),   // 影響 Elevated 元件疊加色

@@ -1,11 +1,8 @@
 package com.andongni.vcblearn
 
 import android.os.Bundle
-import android.widget.Button
-import android.widget.ProgressBar
 import androidx.activity.*
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.*
@@ -16,8 +13,10 @@ import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.unit.dp
 import com.andongni.vcblearn.ui.theme.VCBLearnTheme
 import com.andongni.vcblearn.ui.theme.component.*
 import kotlinx.coroutines.launch
@@ -47,11 +46,15 @@ fun MyApp() {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            BottomAppBar {
+            BottomAppBar(
+            ) {
                 // Home
                 NavigationBarItem(
                     selected = currentScreen == Screen.Home,
                     onClick = { currentScreen = Screen.Home },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
                     icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                     label = { Text(text = "Home", style = MaterialTheme.typography.titleSmall) },
                 )
@@ -65,6 +68,9 @@ fun MyApp() {
                             sheetState.show();
                         }
                     },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
                     icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
                     label = { Text(text = "Add", style = MaterialTheme.typography.titleSmall) },
                 )
@@ -73,6 +79,9 @@ fun MyApp() {
                 NavigationBarItem(
                     selected = currentScreen == Screen.Library,
                     onClick = { currentScreen = Screen.Library },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
                     icon = { Icon(Icons.Default.Menu, contentDescription = "Library") },
                     label = { Text(text = "Library", style = MaterialTheme.typography.titleSmall) },
                 )
@@ -105,66 +114,91 @@ fun Home(showSheet: Boolean) {
         modifier = Modifier.fillMaxSize()
     ) {
         DataSearchBar()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 20.dp),
         ) {
-            Spacer(Modifier.height(80.dp))
+            item {
+                Spacer(Modifier.height(80.dp))
 
-            // Today Learn
-            Text(text = "Today Learn", style = MaterialTheme.typography.headlineMedium)
-            // Process Bar
-            Row(
-                Modifier
+                // Today Learn
+                Text("Today Learn", style = MaterialTheme.typography.headlineMedium)
+
+                // Progress Bar
+                Row(Modifier
                     .fillMaxWidth()
                     .padding(vertical = 20.dp)
-            ) {
-                LinearProgressIndicator(
-                    progress = { 0.8f },
-                    modifier = Modifier.height(20.dp).weight(7f),
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = "20/25",
-                    modifier = Modifier.weight(2f),
-                    style = MaterialTheme.typography.bodyLarge)
+                ) {
+                    LinearProgressIndicator(
+                        progress = { 0.8f },
+                        modifier = Modifier.height(20.dp).weight(7f),
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "20/25",
+                        modifier = Modifier.weight(2f),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
 
             // Recent Learn
+            item {
+                Text(
+                    "Recent Learn",
+                    Modifier.padding(top = 50.dp),
+                    style = MaterialTheme.typography.headlineMedium
+                )
 
-            Text("Recent Learn", Modifier.padding(top = 30.dp), style = MaterialTheme.typography.headlineMedium)
-            LazyRow(
-                Modifier.fillMaxWidth().height(150.dp).padding(top = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(3) {
-                    CardSet()
+                LazyRow(Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .padding(top = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(3) {
+                        CardSet()
+                    }
                 }
             }
 
-            Text("Achievement", Modifier.padding(top = 30.dp), style = MaterialTheme.typography.headlineMedium)
-            Column(
-                Modifier.fillMaxWidth().padding(top = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                FilledIconButton(
-                    onClick = {},
-                    modifier = Modifier.size(200.dp, 100.dp),
-                    shape = IconButtonDefaults.filledShape,
-                ) {
-                    Text("342", style = MaterialTheme.typography.displayMedium)
-                }
+            item {
+                Text(
+                    "Achievement",
+                    Modifier.padding(top = 50.dp),
+                    style = MaterialTheme.typography.headlineMedium
+                )
 
-                FilledIconButton(
-                    onClick = {},
-                    modifier = Modifier.size(200.dp, 100.dp).align(Alignment.End),
-                    shape = IconButtonDefaults.filledShape,
+                Column(
+                    Modifier.fillMaxWidth().padding(vertical = 30.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("342", style = MaterialTheme.typography.displayMedium)
+                    FilledIconButton(
+                        onClick = {},
+                        modifier = Modifier
+                            .size(200.dp, 100.dp)
+                            .graphicsLayer(rotationZ = -5f),
+                        shape = IconButtonDefaults.filledShape          // ✔ 已回到括號內
+                    ) {
+                        Text("342", style = MaterialTheme.typography.displayMedium)
+                    }
+
+
+                    FilledIconButton(
+                        onClick = {},
+                        modifier = Modifier.size(200.dp, 100.dp).align(Alignment.End)
+                            .graphicsLayer(rotationZ = 5f),
+                        shape = IconButtonDefaults.filledShape,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary,
+                        )
+                    ) {
+                        Text("20", style = MaterialTheme.typography.displayMedium)
+                    }
                 }
             }
         }
+
     }
 }
 
