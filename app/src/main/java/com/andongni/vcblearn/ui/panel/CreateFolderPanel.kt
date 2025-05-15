@@ -1,34 +1,38 @@
-package com.andongni.vcblearn.ui.theme.component
+package com.andongni.vcblearn.ui.panel
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.andongni.vcblearn.ui.theme.LexicardioTheme
 import kotlinx.coroutines.launch
-import com.andongni.vcblearn.ui.theme.VCBLearnTheme
 
+//region Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview()
 @Composable
 fun FolderButtonPreview() {
-    VCBLearnTheme {
+    LexicardioTheme {
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         val scope = rememberCoroutineScope()
         CreateFolderBottomSheet(
             sheetState = sheetState,
+            createOnClick = { scope.launch { sheetState.hide() } },
             onDismiss = { scope.launch { sheetState.show() } }
         )
     }
 }
+//endregion
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateFolderBottomSheet(
     sheetState: SheetState,
+    createOnClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
     ModalBottomSheet(
@@ -39,17 +43,17 @@ fun CreateFolderBottomSheet(
     ) {
         var newFolderName by remember { mutableStateOf("") }
 
-
         Column(
-            Modifier.fillMaxSize().padding(10.dp),
+            Modifier.fillMaxSize().padding(10.dp).padding(top = 20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Nav Bar
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(top = 5.dp)
             ) {
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
                 Text(
                     text = "Create Folder",
@@ -58,6 +62,7 @@ fun CreateFolderBottomSheet(
                 )
             }
 
+            // Input Folder Name
             OutlinedTextField(
                 value = newFolderName,
                 onValueChange = { newFolderName = it },
@@ -65,9 +70,11 @@ fun CreateFolderBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
+
+            // Create Folder Button
             FilledIconButton(
                 modifier = Modifier.width(100.dp).padding(top = 20.dp).align(Alignment.End),
-                onClick = onDismiss,
+                onClick = createOnClick,
             ) {
                 Text("Create")
             }

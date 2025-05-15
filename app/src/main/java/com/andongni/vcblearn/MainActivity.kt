@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.*
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.*
 import androidx.compose.material.icons.Icons
@@ -13,21 +14,27 @@ import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import com.andongni.vcblearn.ui.theme.VCBLearnTheme
-import com.andongni.vcblearn.ui.theme.component.*
+import androidx.navigation.NavController
+import com.andongni.vcblearn.route.LexicardioNavGraph
+import com.andongni.vcblearn.ui.component.*
+import com.andongni.vcblearn.ui.panel.CreateFolderBottomSheet
+import com.andongni.vcblearn.ui.theme.LexicardioTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            VCBLearnTheme {
-                MyApp()
+            LexicardioTheme {
+                LexicardioNavGraph()
             }
         }
     }
@@ -37,12 +44,33 @@ private enum class Screen { Home, Library }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyApp() {
+fun MyApp(navController: NavController) {
     var currentScreen by remember { mutableStateOf(Screen.Home) }
     var showSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState()
+    val addSheetState = rememberModalBottomSheetState()
+    var addSheetShow by remember { mutableStateOf(false) }
+    var createFolderSheetShow by remember { mutableStateOf(false) }
+    val createFolderSheetState = rememberModalBottomSheetState(true)
     val scope = rememberCoroutineScope()
 
+    val addAction = listOf(
+        SheetAction(Icons.Default.Add, "Add Card") {
+            scope.launch { addSheetState.hide() }.invokeOnCompletion {
+                if (!addSheetState.isVisible)
+                    addSheetShow = false
+            }
+        },
+        SheetAction(Icons.Default.Add, "Add Folder") {
+            scope.launch {
+                createFolderSheetShow = true
+                addSheetState.hide()
+            }.invokeOnCompletion {
+                addSheetShow = false
+            }
+        },
+    )
+
+    // Footer Nav Bar and Event Bottom Sheet
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
@@ -64,8 +92,7 @@ fun MyApp() {
                     selected = false,
                     onClick = {
                         scope.launch {
-                            showSheet = true
-                            sheetState.show();
+                            addSheetShow = true
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -78,11 +105,11 @@ fun MyApp() {
                 // Library
                 NavigationBarItem(
                     selected = currentScreen == Screen.Library,
-                    onClick = { currentScreen = Screen.Library },
+                    onClick = { currentScreen = Screen.Library; },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     ),
-                    icon = { Icon(Icons.Default.Menu, contentDescription = "Library") },
+                    icon = { Icon(Icons.Filled.Folder, contentDescription = "Library") },
                     label = { Text(text = "Library", style = MaterialTheme.typography.titleSmall) },
                 )
             }
@@ -97,13 +124,22 @@ fun MyApp() {
             }
         }
 
-        if (showSheet) {
-            CustomBottomSheet(sheetState) {
-                scope.launch {
-                    sheetState.hide()
-                    showSheet = false
-                }
-            }
+        AddBottomSheet(navController, addSheetState, addSheetShow, scope) {
+            addSheetShow = it;
+        }
+
+        // Create Folder Bottom Sheet
+        if (createFolderSheetShow) {
+            CreateFolderBottomSheet(
+                sheetState = createFolderSheetState,
+                createOnClick = {
+                    scope.launch { createFolderSheetState.hide() }.invokeOnCompletion {
+                        if (!createFolderSheetState.isVisible)
+                            createFolderSheetShow = false
+                    }
+                },
+                onDismiss = { createFolderSheetShow = false }
+            )
         }
     }
 }
@@ -115,7 +151,10 @@ fun Home(showSheet: Boolean) {
     ) {
         DataSearchBar()
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 20.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp)
+                .padding(top = 20.dp),
         ) {
             item {
                 Spacer(Modifier.height(80.dp))
@@ -123,22 +162,33 @@ fun Home(showSheet: Boolean) {
                 // Today Learn
                 Text("Today Learn", style = MaterialTheme.typography.headlineMedium)
 
+
+                LinearProgressIndicator(
+                    progress = { 0.8f },
+                    modifier = Modifier.fillMaxWidth().height(80.dp).padding(vertical = 20.dp)
+                )
                 // Progress Bar
                 Row(Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 20.dp)
+                    .padding(vertical = 20.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.Bottom
                 ) {
-                    LinearProgressIndicator(
-                        progress = { 0.8f },
-                        modifier = Modifier.height(20.dp).weight(7f),
-                    )
-                    Spacer(Modifier.weight(1f))
                     Text(
-                        "20/25",
-                        modifier = Modifier.weight(2f),
-                        style = MaterialTheme.typography.bodyLarge
+                        "20",
+                        style = MaterialTheme.typography.displayLarge,
+                        modifier = Modifier.alignByBaseline(),
+                    )
+
+                    Text(
+                        " /25",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        style = MaterialTheme.typography.displaySmall,
+                        modifier = Modifier.alignByBaseline()
                     )
                 }
+
+
             }
 
             // Recent Learn
@@ -169,7 +219,9 @@ fun Home(showSheet: Boolean) {
                 )
 
                 Column(
-                    Modifier.fillMaxWidth().padding(vertical = 30.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 30.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     FilledIconButton(
@@ -185,7 +237,9 @@ fun Home(showSheet: Boolean) {
 
                     FilledIconButton(
                         onClick = {},
-                        modifier = Modifier.size(200.dp, 100.dp).align(Alignment.End)
+                        modifier = Modifier
+                            .size(200.dp, 100.dp)
+                            .align(Alignment.End)
                             .graphicsLayer(rotationZ = 5f),
                         shape = IconButtonDefaults.filledShape,
                         colors = IconButtonDefaults.filledIconButtonColors(
@@ -202,10 +256,13 @@ fun Home(showSheet: Boolean) {
     }
 }
 
+
 @Composable
 fun Library() {
     Column(
-        modifier = Modifier.fillMaxSize().padding(20.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
     ) {
         Text("Library", style = MaterialTheme.typography.headlineMedium)
         LibraryTab()
@@ -321,5 +378,3 @@ fun CardSet() {
         }
     }
 }
-
-

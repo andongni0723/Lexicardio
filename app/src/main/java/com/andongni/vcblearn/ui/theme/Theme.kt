@@ -1,6 +1,5 @@
 package com.andongni.vcblearn.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -15,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 private val DarkColorScheme = darkColorScheme(
     /* ===== 1. 主要背景 ===== */
     background       = Color(0xFF14161D),   // #14161D
-
     onBackground     = Color(0xFFE6E6E6),   // #E6E6E6
 
     /* ===== 2. 文字／圖示 ===== */
@@ -47,7 +45,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun VCBLearnTheme(
+fun LexicardioTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
@@ -67,4 +65,6 @@ fun VCBLearnTheme(
         typography = Typography,
         content = content
     )
+
+
 }

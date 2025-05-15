@@ -1,4 +1,4 @@
-package com.andongni.vcblearn.ui.theme.component
+package com.andongni.vcblearn.ui.component
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -49,7 +49,7 @@ fun DataSearchBar() {
                         painter = customPainter,
                         contentDescription = "Profile",
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(30.dp)
                             .clip(CircleShape)
                             .clickable { /*TODO: Personal Page */ }
                     )
