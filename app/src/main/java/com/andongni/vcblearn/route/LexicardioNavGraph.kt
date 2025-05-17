@@ -10,13 +10,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.MyApp
+import com.andongni.vcblearn.ui.panel.CardSetOverviewPanel
 import com.andongni.vcblearn.ui.panel.CreateCardSetScreen
 import com.andongni.vcblearn.ui.panel.ImportCsvDataPanel
+import com.andongni.vcblearn.ui.panel.SettingPanel
 
 sealed class NavRoute(val route: String) {
     data object Home : NavRoute("home")
     data object CreateCardSet : NavRoute("create_card_set")
     data object ImportCsvData : NavRoute("import_csv_data")
+    data object Setting : NavRoute("setting")
+    data object CardSetOverview : NavRoute("card_set_overview")
 }
 
 
@@ -51,6 +55,14 @@ fun LexicardioNavGraph() {
 
         composable(NavRoute.ImportCsvData.route) {
             ImportCsvDataPanel(navController)
+        }
+
+        composable(NavRoute.Setting.route) {
+            SettingPanel(navController)
+        }
+
+        composable(NavRoute.CardSetOverview.route) {
+            CardSetOverviewPanel(navController)
         }
     }
 }

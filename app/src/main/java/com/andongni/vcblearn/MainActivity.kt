@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.*
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.*
 import androidx.compose.material.icons.Icons
@@ -14,12 +13,11 @@ import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.andongni.vcblearn.route.LexicardioNavGraph
+import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.ui.component.*
 import com.andongni.vcblearn.ui.panel.CreateFolderBottomSheet
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
@@ -46,36 +44,17 @@ private enum class Screen { Home, Library }
 @Composable
 fun MyApp(navController: NavController) {
     var currentScreen by remember { mutableStateOf(Screen.Home) }
-    var showSheet by remember { mutableStateOf(false) }
     val addSheetState = rememberModalBottomSheetState()
     var addSheetShow by remember { mutableStateOf(false) }
     var createFolderSheetShow by remember { mutableStateOf(false) }
     val createFolderSheetState = rememberModalBottomSheetState(true)
     val scope = rememberCoroutineScope()
 
-    val addAction = listOf(
-        SheetAction(Icons.Default.Add, "Add Card") {
-            scope.launch { addSheetState.hide() }.invokeOnCompletion {
-                if (!addSheetState.isVisible)
-                    addSheetShow = false
-            }
-        },
-        SheetAction(Icons.Default.Add, "Add Folder") {
-            scope.launch {
-                createFolderSheetShow = true
-                addSheetState.hide()
-            }.invokeOnCompletion {
-                addSheetShow = false
-            }
-        },
-    )
-
     // Footer Nav Bar and Event Bottom Sheet
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            BottomAppBar(
-            ) {
+            BottomAppBar {
                 // Home
                 NavigationBarItem(
                     selected = currentScreen == Screen.Home,
@@ -119,13 +98,13 @@ fun MyApp(navController: NavController) {
             .padding(innerPadding)
             .fillMaxSize()) {
             when (currentScreen) {
-                Screen.Home -> Home(showSheet)
-                Screen.Library -> Library()
+                Screen.Home -> Home(navController)
+                Screen.Library -> Library(navController)
             }
         }
 
         AddBottomSheet(navController, addSheetState, addSheetShow, scope) {
-            addSheetShow = it;
+            addSheetShow = it
         }
 
         // Create Folder Bottom Sheet
@@ -145,11 +124,11 @@ fun MyApp(navController: NavController) {
 }
 
 @Composable
-fun Home(showSheet: Boolean) {
+fun Home(navController: NavController) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        DataSearchBar()
+        DataSearchBar(navController)
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -206,7 +185,7 @@ fun Home(showSheet: Boolean) {
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(3) {
-                        CardSet()
+                        CardSet(navController)
                     }
                 }
             }
@@ -258,20 +237,20 @@ fun Home(showSheet: Boolean) {
 
 
 @Composable
-fun Library() {
+fun Library(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
     ) {
         Text("Library", style = MaterialTheme.typography.headlineMedium)
-        LibraryTab()
+        LibraryTab(navController)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LibraryTab() {
+fun LibraryTab(navController: NavController) {
     val tabs: List<String> = listOf("Card Set", "Folder", "Process", "Tag")
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
@@ -316,7 +295,7 @@ fun LibraryTab() {
     ) { page ->
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (page == 0)
-                CardSetPage()
+                CardSetPage(navController)
             else
                 Text(text = "Page: ${tabs[page]}")
         }
@@ -324,7 +303,7 @@ fun LibraryTab() {
 }
 
 @Composable
-fun CardSetPage() {
+fun CardSetPage(navController: NavController) {
     Column(Modifier
         .padding(top = 16.dp)
         .fillMaxSize()) {
@@ -340,12 +319,12 @@ fun CardSetPage() {
             modifier = Modifier.fillMaxWidth()
         )
 
-        CardSetGroup()
+        CardSetGroup(navController)
     }
 }
 
 @Composable
-fun CardSetGroup() {
+fun CardSetGroup(navController: NavController) {
     LazyColumn(
         Modifier
             .fillMaxSize()
@@ -353,18 +332,18 @@ fun CardSetGroup() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(10) {
-            CardSet()
+            CardSet(navController)
         }
     }
 }
 
 @Composable
-fun CardSet() {
+fun CardSet(navController: NavController) {
     OutlinedButton(
         modifier = Modifier
             .fillMaxWidth(),
         shape = ShapeDefaults.Medium,
-        onClick = {},
+        onClick = { navController.navigate(NavRoute.CardSetOverview.route) },
         contentPadding = PaddingValues(0.dp)   // ← 關鍵
     ) {
         Column(

@@ -44,6 +44,8 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Pink40
 )
 
+var currentTheme = "Light"
+
 @Composable
 fun LexicardioTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -57,6 +59,7 @@ fun LexicardioTheme(
         }
 
         darkTheme -> DarkColorScheme
+
         else -> LightColorScheme
     }
 
@@ -65,6 +68,4 @@ fun LexicardioTheme(
         typography = Typography,
         content = content
     )
-
-
 }

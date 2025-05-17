@@ -1,19 +1,13 @@
 package com.andongni.vcblearn.ui.panel
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.*
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,7 +24,7 @@ import com.andongni.vcblearn.ui.theme.LexicardioTheme
 fun ImportCsvDataPanelPreview() {
     LexicardioTheme {
         val navController = rememberNavController()
-        val fakeVm = remember { FakeCardSetEditorViewModel() }
+        val fakeVm = remember { FakeImportCsvDataViewModel() }
         ImportCsvDataPanel(navController, fakeVm)
     }
 }

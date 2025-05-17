@@ -14,10 +14,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.andongni.vcblearn.route.NavRoute
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DataSearchBar() {
+fun DataSearchBar(
+    navController: NavController
+) {
     var query by rememberSaveable { mutableStateOf("") }
     var active by rememberSaveable { mutableStateOf(false) }
 
@@ -51,7 +55,7 @@ fun DataSearchBar() {
                         modifier = Modifier
                             .size(30.dp)
                             .clip(CircleShape)
-                            .clickable { /*TODO: Personal Page */ }
+                            .clickable { navController.navigate(NavRoute.Setting.route) }
                     )
                 },
             )
