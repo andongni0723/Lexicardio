@@ -3,7 +3,6 @@ package com.andongni.vcblearn.ui.panel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.pager.PagerDefaults.flingBehavior
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,14 +13,13 @@ import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.carousel.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
@@ -72,11 +70,6 @@ fun CardSetOverviewPanel(
                 scrollBehavior = scrollBehavior
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { /*viewModel.addEmptyCard()*/ }) {
-                Icon(Icons.Filled.Add, contentDescription = "Add")
-            }
-        }
     ) { inner ->
 
         LazyColumn(
@@ -138,7 +131,7 @@ fun CardSetOverviewPanel(
 
             item {
                 Button(
-                    onClick = {},
+                    onClick = { navController.navigate(NavRoute.LearnMode.route) },
                     Modifier.fillMaxWidth().height(60.dp),
                     shape = RoundedCornerShape(10.dp),
                     colors = buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -154,7 +147,7 @@ fun CardSetOverviewPanel(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(Modifier.width(16.dp))
-                        Text("Learn", style = MaterialTheme.typography.titleLarge)
+                        Text("Learn", style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }
@@ -177,10 +170,52 @@ fun CardSetOverviewPanel(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(Modifier.width(16.dp))
-                        Text("Test", style = MaterialTheme.typography.titleLarge)
+                        Text("Test", style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }
+
+            item {
+                Text("Cards")
+            }
+
+            items(10) {
+                WordCard()
+            }
+        }
+    }
+}
+
+@Composable
+fun WordCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth().height(100.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(32.dp)
+        ) {
+
+            Box(
+                Modifier.width(80.dp)
+            ) {
+                Text(
+                    "Word",
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            VerticalDivider(
+                thickness = 2.dp,
+                color = MaterialTheme.colorScheme.surface
+            )
+            Text("中文",
+                modifier = Modifier,
+                style = MaterialTheme.typography.headlineMedium)
         }
     }
 }

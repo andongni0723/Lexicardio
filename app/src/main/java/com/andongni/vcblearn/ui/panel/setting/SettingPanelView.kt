@@ -1,4 +1,4 @@
-package com.andongni.vcblearn.ui.panel
+package com.andongni.vcblearn.ui.panel.setting
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -46,9 +46,7 @@ fun SettingPanel(
         mutableStateOf<Map<String, String>>(mapOf("path" to "No Data"))
     }
 
-
     Scaffold(
-//        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = { Text("Setting") },
@@ -98,10 +96,7 @@ fun SettingPanel(
                     icon = Icons.Filled.Language,
                     onClick = {}
                 )
-
-
             }
-
         }
     }
 }

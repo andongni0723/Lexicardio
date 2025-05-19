@@ -13,7 +13,8 @@ import com.andongni.vcblearn.MyApp
 import com.andongni.vcblearn.ui.panel.CardSetOverviewPanel
 import com.andongni.vcblearn.ui.panel.CreateCardSetScreen
 import com.andongni.vcblearn.ui.panel.ImportCsvDataPanel
-import com.andongni.vcblearn.ui.panel.SettingPanel
+import com.andongni.vcblearn.ui.panel.LearnModePanel
+import com.andongni.vcblearn.ui.panel.setting.SettingPanel
 
 sealed class NavRoute(val route: String) {
     data object Home : NavRoute("home")
@@ -21,6 +22,7 @@ sealed class NavRoute(val route: String) {
     data object ImportCsvData : NavRoute("import_csv_data")
     data object Setting : NavRoute("setting")
     data object CardSetOverview : NavRoute("card_set_overview")
+    data object LearnMode : NavRoute("learn_mode")
 }
 
 
@@ -63,6 +65,10 @@ fun LexicardioNavGraph() {
 
         composable(NavRoute.CardSetOverview.route) {
             CardSetOverviewPanel(navController)
+        }
+
+        composable(NavRoute.LearnMode.route) {
+             LearnModePanel(navController)
         }
     }
 }
