@@ -1,22 +1,25 @@
 package com.andongni.vcblearn.ui.panel.setting
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
 //region Preview
@@ -26,11 +29,11 @@ import com.andongni.vcblearn.ui.theme.LexicardioTheme
 fun SettingPanelPreview() {
     LexicardioTheme {
         val navController = rememberNavController()
-        val fakeVm = remember { FakeSettingPanelViewModel() }
-        SettingPanel(navController, fakeVm)
+//        val fakeVm = remember { FakeSettingPanelViewModel() }
+        SettingPanel(navController)
     }
 }
-class FakeSettingPanelViewModel : CardSetEditorViewModel()
+//class FakeSettingPanelViewModel : SettingPanelViewModel()
 //endregion
 
 
@@ -38,12 +41,18 @@ class FakeSettingPanelViewModel : CardSetEditorViewModel()
 @Composable
 fun SettingPanel(
     navController: NavController,
-    viewModel: CardSetEditorViewModel = hiltViewModel()
+    viewModel: SettingPanelViewModel = hiltViewModel()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-
+    val fieldList by viewModel.fields.collectAsState()
     var userData by rememberSaveable {
         mutableStateOf<Map<String, String>>(mapOf("path" to "No Data"))
+    }
+
+    // SAF Launcher
+    val context = LocalContext.current
+    val folderPicker = rememberLauncherForActivityResult(OpenDocumentTree()) { uri ->
+        uri?.let { viewModel.onFolderPicked(it.toString()) }
     }
 
     Scaffold(
@@ -75,27 +84,42 @@ fun SettingPanel(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                 )
+            }
 
-                SettingListItem(
-                    headline = "User Data Path",
-                    supporting = userData["path"].toString(),
-                    icon = Icons.Filled.Folder,
-                    onClick = {}
-                )
+            items(
+                fieldList,
+                key = { it.id }
+            ) { field ->
+                when (field) {
+                    is SettingFieldData.Navigation -> {
+                        SettingListItem(
+                            headline   = field.label,
+                            supporting = field.current,
+                            icon       = field.icon,
+                            onClick    = { folderPicker.launch(null);}
+                        )
+                    }
+//
+                    is SettingFieldData.Dropdown -> {
+                        SettingListItem(
+                            headline   = field.label,
+                            supporting = field.options[field.selectedIndex],
+                            icon       = field.icon,
+                            onClick    = {}
+                        )
+                    }
 
-                SettingListItem(
-                    headline = "Theme",
-                    supporting = "Dark",
-                    icon = Icons.Filled.ColorLens,
-                    onClick = {}
-                )
+                    is SettingFieldData.TextField -> {
+                        SettingListItem(
+                            headline = field.label,
+                            supporting = field.value,
+                            icon = field.icon,
+                            onClick = {}
+                        )
+                    }
 
-                SettingListItem(
-                    headline = "Language",
-                    supporting = "English",
-                    icon = Icons.Filled.Language,
-                    onClick = {}
-                )
+                    is SettingFieldData.Switch -> {}
+                }
             }
         }
     }
@@ -111,7 +135,7 @@ fun SettingListItem(
     ListItem(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick },
+            .clickable(onClick = onClick),
         leadingContent = {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         },
@@ -122,7 +146,7 @@ fun SettingListItem(
             Text(
                 supporting,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
             )
         },
         trailingContent = {

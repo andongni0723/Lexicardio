@@ -1,13 +1,13 @@
 package com.andongni.vcblearn.ui.panel.setting
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Lan
-import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
+import com.andongni.vcblearn.data.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class SettingFieldData {
@@ -49,35 +49,47 @@ sealed class SettingFieldData {
 }
 
 @HiltViewModel
-open class SettingPanelViewModel @Inject constructor() : ViewModel() {
-    private val _fields = MutableStateFlow<List<SettingFieldData>>(emptyList())
-    val fields = _fields
+open class SettingPanelViewModel @Inject constructor(
+    private val repo: SettingsRepository
+) : ViewModel() {
 
-    init {
-        _fields.value = listOf(
-            SettingFieldData.Navigation(
-                id = "user_path",
-                label = "User Data Path",
-                icon = Icons.Filled.Folder,
-                current = "No Data",
-                onClick = {}
-            ),
-            SettingFieldData.Dropdown(
-                id = "theme",
-                label = "Theme",
-                icon = Icons.Filled.Folder,
-                selectedIndex = 0,
-                options = listOf("Light", "Dark", "System"),
-                onSelect = {}
-            ),
-            SettingFieldData.Dropdown(
-                id = "language",
-                label = "Language",
-                icon = Icons.Filled.Language,
-                selectedIndex = 0,
-                options = listOf("English", "Traditional Chinese", "Simplified Chinese"),
-                onSelect = {}
+    val fields: StateFlow<List<SettingFieldData>> =
+        repo.userFolder.map { path ->
+            listOf(
+                SettingFieldData.Navigation(
+                    id = "user_path",
+                    label = "User Data Path",
+                    icon = Icons.Filled.Folder,
+                    current = path,
+                    onClick = {}
+                ),
+                SettingFieldData.Dropdown(
+                    id = "theme",
+                    label = "Theme",
+                    icon = Icons.Filled.ColorLens,
+                    selectedIndex = 0,
+                    options = listOf("Light", "Dark", "System"),
+                    onSelect = {}
+                ),
+                SettingFieldData.Dropdown(
+                    id = "language",
+                    label = "Language",
+                    icon = Icons.Filled.Language,
+                    selectedIndex = 0,
+                    options = listOf("English", "Traditional Chinese", "Simplified Chinese"),
+                    onSelect = {}
+                )
             )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
         )
+
+    fun onFolderPicked(path: String) {
+        viewModelScope.launch {
+            repo.saveUserFolder(path)
+        }
     }
 }
