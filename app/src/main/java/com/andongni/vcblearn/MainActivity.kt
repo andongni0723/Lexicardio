@@ -3,6 +3,7 @@ package com.andongni.vcblearn
 import android.os.Bundle
 import androidx.activity.*
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.*
@@ -16,26 +17,43 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.andongni.vcblearn.route.LexicardioNavGraph
-import com.andongni.vcblearn.route.NavRoute
+import com.andongni.vcblearn.data.SettingsRepository
+import com.andongni.vcblearn.route.*
 import com.andongni.vcblearn.ui.component.*
 import com.andongni.vcblearn.ui.panel.CreateFolderBottomSheet
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
-import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.*
+import dagger.hilt.android.*
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val repo by lazy { EntryPointAccessors.fromApplication(
+        applicationContext,
+        SettingsRepoEntry::class.java
+    ).settingsRepo }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            LexicardioTheme {
+            val themeMode by repo.theme.collectAsState(null)
+            if(themeMode == null) return@setContent
+            val dynamic = themeMode == "dynamic"
+            LexicardioTheme(dynamic) {
                 LexicardioNavGraph()
             }
         }
     }
+}
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface SettingsRepoEntry {
+    val settingsRepo: SettingsRepository
 }
 
 private enum class Screen { Home, Library }
@@ -139,7 +157,7 @@ fun Home(navController: NavController) {
                 Spacer(Modifier.height(80.dp))
 
                 // Today Learn
-                Text("Today Learn", style = MaterialTheme.typography.headlineMedium)
+                Text("Today Learn", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
 
 
                 LinearProgressIndicator(

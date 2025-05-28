@@ -5,22 +5,26 @@ import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTre
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.selection.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
+import kotlinx.coroutines.launch
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +58,9 @@ fun SettingPanel(
     val folderPicker = rememberLauncherForActivityResult(OpenDocumentTree()) { uri ->
         uri?.let { viewModel.onFolderPicked(it.toString()) }
     }
+
+    // Dialog
+    var activeDialog by remember { mutableStateOf<SettingFieldData.Dropdown?>(null) }
 
     Scaffold(
         topBar = {
@@ -99,13 +106,13 @@ fun SettingPanel(
                             onClick    = { folderPicker.launch(null);}
                         )
                     }
-//
+
                     is SettingFieldData.Dropdown -> {
                         SettingListItem(
                             headline   = field.label,
                             supporting = field.options[field.selectedIndex],
                             icon       = field.icon,
-                            onClick    = {}
+                            onClick    = { activeDialog = field }
                         )
                     }
 
@@ -114,7 +121,7 @@ fun SettingPanel(
                             headline = field.label,
                             supporting = field.value,
                             icon = field.icon,
-                            onClick = {}
+                            onClick = { }
                         )
                     }
 
@@ -122,6 +129,18 @@ fun SettingPanel(
                 }
             }
         }
+    }
+
+    activeDialog?.let { field ->
+        SettingFieldDialog(
+            onDismissRequest = { activeDialog = null },
+            title = field.label,
+            fields = field.options,
+            currentSelected = field.options[field.selectedIndex],
+            onOptionSelected = { option ->
+                field.onSelect(field.options.indexOf(option))
+            }
+        )
     }
 }
 
@@ -156,4 +175,82 @@ fun SettingListItem(
             containerColor = MaterialTheme.colorScheme.background,
         )
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingFieldDialog(
+    onDismissRequest: () -> Unit,
+    title: String,
+    fields: List<String>,
+    currentSelected: String = fields[0],
+    onOptionSelected: (String) -> Unit = {}
+) {
+    val (selectedOption, onSelected) = remember { mutableStateOf(currentSelected) }
+
+    BasicAlertDialog(
+        onDismissRequest = onDismissRequest,
+    ) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.background,
+        ) {
+            Column(
+                Modifier.height(380.dp),
+            ) {
+                Text(
+                    title,
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp, start = 24.dp)
+                        .weight(1f),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+
+                HorizontalDivider(Modifier.fillMaxWidth())
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 16.dp)
+                        .weight(2.5f)
+                        .selectableGroup(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+
+                    items(fields) { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(
+                                    selected = (option == selectedOption),
+                                    onClick = { onOptionSelected(option); onSelected(option);}
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (option == selectedOption),
+                                onClick = { onOptionSelected(option); onSelected(option);}
+                            )
+                            Spacer(Modifier.width(20.dp))
+                            Text(option)
+                        }
+                    }
+                }
+
+                HorizontalDivider(Modifier.fillMaxWidth())
+
+                Row(
+                    Modifier.fillMaxWidth().padding(24.dp).weight(1f),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(
+                        onClick = { onDismissRequest() }
+                    ) {
+                        Text("Confirm", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        }
+    }
 }

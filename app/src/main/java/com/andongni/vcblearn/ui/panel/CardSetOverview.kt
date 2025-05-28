@@ -210,7 +210,7 @@ fun WordCard() {
             }
 
             VerticalDivider(
-                thickness = 2.dp,
+                thickness = 1.dp,
                 color = MaterialTheme.colorScheme.surface
             )
             Text("中文",

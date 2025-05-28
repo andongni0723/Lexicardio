@@ -1,5 +1,6 @@
 package com.andongni.vcblearn.ui.panel.setting
 
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -53,31 +54,52 @@ open class SettingPanelViewModel @Inject constructor(
     private val repo: SettingsRepository
 ) : ViewModel() {
 
+    val languageOptions = listOf("English", "繁體中文", "简体中文")
+    val languageCodes = listOf("en", "zh-tw", "zh-cn")
+    val themeOptions = listOf("Dark", "Material You")
+    val themeCodes = listOf("dark", "dynamic")
+
     val fields: StateFlow<List<SettingFieldData>> =
-        repo.userFolder.map { path ->
+        combine(
+            repo.userFolder,
+            repo.theme,
+            repo.language
+        ) { folderPath, themeCode, languageCode ->
+
+            val themeIndex = themeCodes.indexOf(themeCode).coerceAtLeast(0)
+            val languageIndex = languageCodes.indexOf(languageCode).coerceAtLeast(0)
+
             listOf(
                 SettingFieldData.Navigation(
                     id = "user_path",
                     label = "User Data Path",
                     icon = Icons.Filled.Folder,
-                    current = path,
+                    current = folderPath,
                     onClick = {}
                 ),
                 SettingFieldData.Dropdown(
                     id = "theme",
                     label = "Theme",
                     icon = Icons.Filled.ColorLens,
-                    selectedIndex = 0,
-                    options = listOf("Light", "Dark", "System"),
-                    onSelect = {}
+                    selectedIndex = themeIndex,
+                    options = themeOptions,
+                    onSelect = { i ->
+                        viewModelScope.launch {
+                            repo.saveTheme(themeCodes[i])
+                        }
+                    }
                 ),
                 SettingFieldData.Dropdown(
                     id = "language",
                     label = "Language",
                     icon = Icons.Filled.Language,
-                    selectedIndex = 0,
-                    options = listOf("English", "Traditional Chinese", "Simplified Chinese"),
-                    onSelect = {}
+                    selectedIndex = languageIndex,
+                    options = languageOptions,
+                    onSelect = { i ->
+                        viewModelScope.launch {
+                            repo.saveLanguage(languageCodes[i]);
+                        }
+                    }
                 )
             )
         }
