@@ -3,7 +3,6 @@ package com.andongni.vcblearn
 import android.os.Bundle
 import androidx.activity.*
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.*
@@ -15,6 +14,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.andongni.vcblearn.data.SettingsRepository
@@ -39,9 +39,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            val themeMode by repo.theme.collectAsState(null)
-            if(themeMode == null) return@setContent
+            val themeMode by repo.theme.collectAsState("dark")
             val dynamic = themeMode == "dynamic"
             LexicardioTheme(dynamic) {
                 LexicardioNavGraph()
@@ -81,7 +81,8 @@ fun MyApp(navController: NavController) {
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     ),
                     icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text(text = "Home", style = MaterialTheme.typography.titleSmall) },
+                    label = { Text(stringResource(R.string.home),
+                        style = MaterialTheme.typography.titleSmall) },
                 )
 
                 // Add
@@ -96,7 +97,8 @@ fun MyApp(navController: NavController) {
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     ),
                     icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
-                    label = { Text(text = "Add", style = MaterialTheme.typography.titleSmall) },
+                    label = { Text(stringResource(R.string.add),
+                        style = MaterialTheme.typography.titleSmall) },
                 )
 
                 // Library
@@ -107,7 +109,8 @@ fun MyApp(navController: NavController) {
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     ),
                     icon = { Icon(Icons.Filled.Folder, contentDescription = "Library") },
-                    label = { Text(text = "Library", style = MaterialTheme.typography.titleSmall) },
+                    label = { Text(stringResource(R.string.library),
+                        style = MaterialTheme.typography.titleSmall) },
                 )
             }
         }
@@ -157,7 +160,9 @@ fun Home(navController: NavController) {
                 Spacer(Modifier.height(80.dp))
 
                 // Today Learn
-                Text("Today Learn", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
+                Text(stringResource(R.string.today_learn),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground)
 
 
                 LinearProgressIndicator(
@@ -191,7 +196,7 @@ fun Home(navController: NavController) {
             // Recent Learn
             item {
                 Text(
-                    "Recent Learn",
+                    stringResource(R.string.recent_learn),
                     Modifier.padding(top = 50.dp),
                     style = MaterialTheme.typography.headlineMedium
                 )
@@ -210,7 +215,7 @@ fun Home(navController: NavController) {
 
             item {
                 Text(
-                    "Achievement",
+                    stringResource(R.string.achievement),
                     Modifier.padding(top = 50.dp),
                     style = MaterialTheme.typography.headlineMedium
                 )
@@ -226,7 +231,7 @@ fun Home(navController: NavController) {
                         modifier = Modifier
                             .size(200.dp, 100.dp)
                             .graphicsLayer(rotationZ = -5f),
-                        shape = IconButtonDefaults.filledShape          // ✔ 已回到括號內
+                        shape = IconButtonDefaults.filledShape
                     ) {
                         Text("342", style = MaterialTheme.typography.displayMedium)
                     }
@@ -261,7 +266,7 @@ fun Library(navController: NavController) {
             .fillMaxSize()
             .padding(20.dp)
     ) {
-        Text("Library", style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.library), style = MaterialTheme.typography.headlineMedium)
         LibraryTab(navController)
     }
 }
@@ -269,7 +274,12 @@ fun Library(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryTab(navController: NavController) {
-    val tabs: List<String> = listOf("Card Set", "Folder", "Process", "Tag")
+    val tabs: List<String> = listOf(
+        stringResource(R.string.card_set),
+        stringResource(R.string.folder),
+        stringResource(R.string.recent),
+        stringResource(R.string.tag)
+    )
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
 
@@ -282,7 +292,6 @@ fun LibraryTab(navController: NavController) {
         containerColor = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.primary,
         indicator = { tabPositions ->
-            // 下方指示條：跟隨選中的 Tab
             SecondaryIndicator(
                 modifier = Modifier
                     .tabIndicatorOffset(tabPositions[pagerState.currentPage]),
@@ -290,7 +299,6 @@ fun LibraryTab(navController: NavController) {
             )
         }
     ) {
-        // 動態產生每一個 Tab
         tabs.forEachIndexed { index, title ->
             Tab(
                 selected = pagerState.currentPage == index,
@@ -331,7 +339,7 @@ fun CardSetPage(navController: NavController) {
         OutlinedTextField(
             value = text,
             onValueChange = { text = it},
-            label = { Text("Filter") },
+            label = { Text(stringResource(R.string.filter)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -362,7 +370,7 @@ fun CardSet(navController: NavController) {
             .fillMaxWidth(),
         shape = ShapeDefaults.Medium,
         onClick = { navController.navigate(NavRoute.CardSetOverview.route) },
-        contentPadding = PaddingValues(0.dp)   // ← 關鍵
+        contentPadding = PaddingValues(0.dp)
     ) {
         Column(
             Modifier

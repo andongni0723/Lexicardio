@@ -1,3 +1,44 @@
 <resources>
-    <string name="app_name">Lexicardio</string>
+    <string name="app_name" translatable="false">Lexicardio</string>
+    <string name="home">Home</string>
+    <string name="today_learn">Today Learn</string>
+    <string name="recent_learn">Recent Learn</string>
+    <string name="achievement">Achievement</string>
+    <string name="add">Add</string>
+    <string name="library">Library</string>
+    <string name="search">Search</string>
+    <string name="add_card">Add Card</string>
+    <string name="add_folder">Add Folder</string>
+    <string name="general">General</string>
+    <string name="user_data_path">User Data Path</string>
+    <string name="theme">Theme</string>
+    <string name="language">Language</string>
+    <string name="setting">Setting</string>
+    <string name="filter">Filter</string>
+    <string name="learn">Learn</string>
+    <string name="test">Test</string>
+    <string name="words">Words</string>
+    <string name="cards">Cards</string>
+    <string name="create_card_set">Create Card Set</string>
+    <string name="title">Title</string>
+    <string name="import_word">Import</string>
+    <string name="word">Word</string>
+    <string name="definition">Definition</string>
+    <string name="delimiter">Delimiter</string>
+    <string name="tab" translatable="false">Tab</string>
+    <string name="comma">Comma</string>
+    <string name="custom">Custom</string>
+    <string name="line_break">Line Break</string>
+    <string name="new_line">New Line</string>
+    <string name="semicolon">Semicolon</string>
+    <string name="import_csv_data">Import CSV Data</string>
+    <string name="create_folder">Create Folder</string>
+    <string name="folder_name">Folder Name</string>
+    <string name="create">Create</string>
+    <string name="choose_answer">Choose Answer</string>
+    <string name="card_set">Card Set</string>
+    <string name="recent">Recent</string>
+    <string name="tag">Tag</string>
+    <string name="folder">Folder</string>
+    <string name="confirm">Confirm</string>
 </resources>

@@ -1,11 +1,14 @@
 package com.andongni.vcblearn.ui.panel.setting
 
-import android.util.Log
+import com.andongni.vcblearn.R
+import android.app.Activity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.*
 import com.andongni.vcblearn.data.SettingsRepository
+import com.andongni.vcblearn.locate.appLanguages
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -13,12 +16,12 @@ import javax.inject.Inject
 
 sealed class SettingFieldData {
     abstract val id: String
-    abstract val label: String
+    abstract val label: Int
     abstract val icon: ImageVector
 
     data class Navigation(
         override val id: String,
-        override val label: String,
+        override val label: Int,
         override val icon: ImageVector,
         val current: String,
         val onClick: () -> Unit
@@ -26,16 +29,16 @@ sealed class SettingFieldData {
 
     data class Dropdown(
         override val id: String,
-        override val label: String,
+        override val label: Int,
         override val icon: ImageVector,
         val selectedIndex: Int,
         val options: List<String>,
-        val onSelect: (Int) -> Unit
+        val onSelect: (Activity, Int) -> Unit
     ) : SettingFieldData()
 
     data class TextField(
         override val id: String,
-        override val label: String,
+        override val label: Int,
         override val icon: ImageVector,
         val value: String,
         val onValueChange: (String) -> Unit
@@ -43,7 +46,7 @@ sealed class SettingFieldData {
 
     data class Switch(
         override val id: String,
-        override val label: String,
+        override val label: Int,
         override val icon: ImageVector,
         val checked: Boolean
     ) : SettingFieldData()
@@ -51,11 +54,11 @@ sealed class SettingFieldData {
 
 @HiltViewModel
 open class SettingPanelViewModel @Inject constructor(
-    private val repo: SettingsRepository
+    private val repo: SettingsRepository,
 ) : ViewModel() {
 
-    val languageOptions = listOf("English", "繁體中文", "简体中文")
-    val languageCodes = listOf("en", "zh-tw", "zh-cn")
+    val languageOptions = appLanguages.map { it.displayName }
+    val languageCodes = appLanguages.map { it.code }
     val themeOptions = listOf("Dark", "Material You")
     val themeCodes = listOf("dark", "dynamic")
 
@@ -72,18 +75,18 @@ open class SettingPanelViewModel @Inject constructor(
             listOf(
                 SettingFieldData.Navigation(
                     id = "user_path",
-                    label = "User Data Path",
+                    label = R.string.user_data_path,
                     icon = Icons.Filled.Folder,
                     current = folderPath,
                     onClick = {}
                 ),
                 SettingFieldData.Dropdown(
                     id = "theme",
-                    label = "Theme",
+                    label = R.string.theme,
                     icon = Icons.Filled.ColorLens,
                     selectedIndex = themeIndex,
                     options = themeOptions,
-                    onSelect = { i ->
+                    onSelect = {activity, i ->
                         viewModelScope.launch {
                             repo.saveTheme(themeCodes[i])
                         }
@@ -91,13 +94,13 @@ open class SettingPanelViewModel @Inject constructor(
                 ),
                 SettingFieldData.Dropdown(
                     id = "language",
-                    label = "Language",
+                    label = R.string.language,
                     icon = Icons.Filled.Language,
                     selectedIndex = languageIndex,
                     options = languageOptions,
-                    onSelect = { i ->
+                    onSelect = { activity, i  ->
                         viewModelScope.launch {
-                            repo.saveLanguage(languageCodes[i]);
+                            repo.saveLanguage(languageCodes[i], activity);
                         }
                     }
                 )

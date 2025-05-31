@@ -9,11 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.andongni.vcblearn.R
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
@@ -50,7 +52,7 @@ fun ImportCsvDataPanel(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text("Import CSV Data") },
+                title = { Text(stringResource(R.string.import_csv_data)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -90,16 +92,16 @@ fun ImportCsvDataPanel(
 
             item {
                 Column {
-                    Text("Delimiter", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.delimiter), style = MaterialTheme.typography.titleMedium)
 
                     OptionRow(
-                        label = "Tab",
+                        label = stringResource(R.string.tab),
                         selected = delimiter == "tab",
                         onClick = { delimiter = "tab" },
                     )
 
                     OptionRow(
-                        label = "Comma",
+                        label = stringResource(R.string.comma),
                         selected = delimiter == "comma",
                         onClick = { delimiter = "comma" },
                     )
@@ -110,7 +112,7 @@ fun ImportCsvDataPanel(
                     ) {
                         TextField(
                             value = customDelimiter,
-                            label = { Text("Custom") },
+                            label = { Text(stringResource(R.string.custom)) },
                             onValueChange = { customDelimiter = it },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = { Text(", ") },
@@ -122,16 +124,16 @@ fun ImportCsvDataPanel(
 
             item {
                 Column {
-                    Text("Line Break")
+                    Text(stringResource(R.string.line_break))
 
                     OptionRow(
-                        label = "New Line",
+                        label = stringResource(R.string.new_line),
                         selected = lineBreak == "new_line",
                         onClick = { lineBreak = "new_line" },
                     )
 
                     OptionRow(
-                        label = "Semicolon",
+                        label = stringResource(R.string.semicolon),
                         selected = lineBreak == "semicolon",
                         onClick = { lineBreak = "semicolon" },
                     )
@@ -142,7 +144,7 @@ fun ImportCsvDataPanel(
                     ) {
                         TextField(
                             value = customLineBreak,
-                            label = { Text("Custom") },
+                            label = { Text(stringResource(R.string.custom)) },
                             onValueChange = { customLineBreak = it },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = { Text("/n") },
@@ -151,17 +153,6 @@ fun ImportCsvDataPanel(
                     }
                 }
             }
-
-//            item {
-//                LazyColumn(
-//                    modifier = Modifier.fillMaxSize(),
-//                    verticalArrangement = Arrangement.spacedBy(20.dp),
-//                ) {
-//                    items(10) {
-//                        CardEdit()
-//                    }
-//                }
-//            }
 
             items(10) {
                 CardEdit()

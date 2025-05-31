@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home">主页</string>
+    <string name="today_learn">今日学习</string>
+    <string name="recent_learn">最近学习</string>
+    <string name="achievement">成就</string>
+    <string name="add">添加</string>
+    <string name="search">搜索</string>
+    <string name="filter">筛选</string>
+    <string name="create">创建</string>
+    <string name="library">词库</string>
+    <string name="add_card">创建卡组</string>
+    <string name="add_folder">创建文件夹</string>
+    <string name="create_card_set">创建卡组</string>
+    <string name="create_folder">创建文件夹</string>
+    <string name="folder_name">文件夹名称</string>
+    <string name="setting">设置</string>
+    <string name="general">常规</string>
+    <string name="user_data_path">用户数据路径</string>
+    <string name="theme">主题</string>
+    <string name="language">语言</string>
+    <string name="learn">学习</string>
+    <string name="test">测试</string>
+    <string name="words">个单词</string>
+    <string name="cards">张卡片</string>
+    <string name="choose_answer">选择答案</string>
+    <string name="title">标题</string>
+    <string name="import_word">导入</string>
+    <string name="word">单词</string>
+    <string name="definition">定义</string>
+    <string name="delimiter">分隔符</string>
+    <string name="comma">逗号</string>
+    <string name="custom">自定义</string>
+    <string name="line_break">换行符</string>
+    <string name="new_line">新行</string>
+    <string name="semicolon">分号</string>
+    <string name="import_csv_data">导入 CSV</string>
+    <string name="card_set">卡组</string>
+    <string name="recent">最近</string>
+    <string name="tag">标记</string>
+    <string name="folder">文件夹</string>
+    <string name="confirm">确认</string>
+</resources>

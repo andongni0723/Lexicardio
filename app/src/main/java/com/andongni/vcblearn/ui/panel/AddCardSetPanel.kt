@@ -1,5 +1,6 @@
 package com.andongni.vcblearn.ui.panel
 
+import com.andongni.vcblearn.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -49,7 +51,7 @@ fun CreateCardSetScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text("Create Card Set") },
+                title = { Text(stringResource(R.string.create_card_set)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -84,7 +86,7 @@ fun CreateCardSetScreen(
                 OutlinedTextField(
                     value = "",
                     onValueChange = {},
-                    label = { Text("Title") },
+                    label = { Text(stringResource(R.string.title)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -99,7 +101,7 @@ fun CreateCardSetScreen(
                 ) {
                     Icon(Icons.Filled.Upload, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Import")
+                    Text(stringResource(R.string.import_csv_data))
                 }
             }
 
@@ -140,14 +142,14 @@ fun CardEdit() {
             TextField(
                 value = word,
                 onValueChange = { word = it},
-                label = { Text("Word", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)) },
+                label = { Text(stringResource(R.string.word), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = textFieldColors
             )
             TextField(
                 value = definition,
                 onValueChange = { definition = it},
-                label = { Text("Definition", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)) },
+                label = { Text(stringResource(R.string.definition), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = textFieldColors
             )

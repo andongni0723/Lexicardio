@@ -1,5 +1,6 @@
 package com.andongni.vcblearn.ui.panel
 
+import  com.andongni.vcblearn.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +14,7 @@ import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.carousel.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
@@ -124,7 +126,7 @@ fun CardSetOverviewPanel(
 
             item {
                 Text(
-                    "30 Words",
+                    "30" + stringResource(R.string.words),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
@@ -147,7 +149,7 @@ fun CardSetOverviewPanel(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(Modifier.width(16.dp))
-                        Text("Learn", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.learn), style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }
@@ -170,7 +172,8 @@ fun CardSetOverviewPanel(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(Modifier.width(16.dp))
-                        Text("Test", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.test),
+                            style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }

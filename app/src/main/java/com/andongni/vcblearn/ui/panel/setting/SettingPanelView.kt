@@ -1,6 +1,9 @@
 package com.andongni.vcblearn.ui.panel.setting
 
-import androidx.activity.compose.rememberLauncherForActivityResult
+
+import android.app.Activity
+import android.content.*
+import androidx.activity.compose.*
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,17 +17,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.andongni.vcblearn.R
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
-import kotlinx.coroutines.launch
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +41,16 @@ fun SettingPanelPreview() {
 //class FakeSettingPanelViewModel : SettingPanelViewModel()
 //endregion
 
+fun Context.getActivityOrNull(): Activity? {
+    var context = this
+    if (context is Activity) return context
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+
+    return null
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +65,7 @@ fun SettingPanel(
     }
 
     // SAF Launcher
-    val context = LocalContext.current
+    val activity = LocalActivity.current as Activity
     val folderPicker = rememberLauncherForActivityResult(OpenDocumentTree()) { uri ->
         uri?.let { viewModel.onFolderPicked(it.toString()) }
     }
@@ -65,7 +76,7 @@ fun SettingPanel(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Setting") },
+                title = { Text(stringResource(R.string.setting)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -86,7 +97,7 @@ fun SettingPanel(
             item {
 
                 Text(
-                    text = "General",
+                    text = stringResource(R.string.general),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
@@ -100,7 +111,7 @@ fun SettingPanel(
                 when (field) {
                     is SettingFieldData.Navigation -> {
                         SettingListItem(
-                            headline   = field.label,
+                            headline   = stringResource(field.label),
                             supporting = field.current,
                             icon       = field.icon,
                             onClick    = { folderPicker.launch(null);}
@@ -109,7 +120,7 @@ fun SettingPanel(
 
                     is SettingFieldData.Dropdown -> {
                         SettingListItem(
-                            headline   = field.label,
+                            headline   = stringResource(field.label),
                             supporting = field.options[field.selectedIndex],
                             icon       = field.icon,
                             onClick    = { activeDialog = field }
@@ -118,7 +129,7 @@ fun SettingPanel(
 
                     is SettingFieldData.TextField -> {
                         SettingListItem(
-                            headline = field.label,
+                            headline = stringResource(field.label),
                             supporting = field.value,
                             icon = field.icon,
                             onClick = { }
@@ -134,11 +145,11 @@ fun SettingPanel(
     activeDialog?.let { field ->
         SettingFieldDialog(
             onDismissRequest = { activeDialog = null },
-            title = field.label,
+            title = stringResource(field.label),
             fields = field.options,
             currentSelected = field.options[field.selectedIndex],
             onOptionSelected = { option ->
-                field.onSelect(field.options.indexOf(option))
+                field.onSelect(activity, field.options.indexOf(option))
             }
         )
     }
@@ -247,7 +258,7 @@ fun SettingFieldDialog(
                     TextButton(
                         onClick = { onDismissRequest() }
                     ) {
-                        Text("Confirm", color = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.confirm), color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }

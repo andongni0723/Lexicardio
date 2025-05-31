@@ -1,11 +1,13 @@
 package com.andongni.vcblearn.ui.panel
 
+import com.andongni.vcblearn.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
@@ -56,7 +58,7 @@ fun CreateFolderBottomSheet(
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
                 Text(
-                    text = "Create Folder",
+                    text = stringResource(R.string.create_folder),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(start = 8.dp)
                 )
@@ -66,7 +68,7 @@ fun CreateFolderBottomSheet(
             OutlinedTextField(
                 value = newFolderName,
                 onValueChange = { newFolderName = it },
-                label = { Text("Folder Name") },
+                label = { Text(stringResource(R.string.folder_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -76,7 +78,7 @@ fun CreateFolderBottomSheet(
                 modifier = Modifier.width(100.dp).padding(top = 20.dp).align(Alignment.End),
                 onClick = createOnClick,
             ) {
-                Text("Create")
+                Text(stringResource(R.string.create))
             }
         }
     }

@@ -1,5 +1,6 @@
 [versions]
 agp = "8.9.2"
+appcompat = "1.7.0"
 datastorePreferences = "1.1.6"
 documentfile = "1.1.0"
 hiltAndroid = "2.56.2"
@@ -17,11 +18,13 @@ navigationCompose = "2.9.0"
 
 
 [libraries]
+androidx-appcompat = { module = "androidx.appcompat:appcompat" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-navigation-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
