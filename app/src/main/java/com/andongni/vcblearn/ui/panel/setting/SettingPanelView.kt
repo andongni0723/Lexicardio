@@ -25,7 +25,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
+import com.andongni.vcblearn.data.SettingFieldData
+import com.andongni.vcblearn.data.SettingPanelViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +59,7 @@ fun Context.getActivityOrNull(): Activity? {
 @Composable
 fun SettingPanel(
     navController: NavController,
-    viewModel: SettingPanelViewModel = hiltViewModel()
+    viewModel: SettingPanelViewModel = hiltViewModel(),
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val fieldList by viewModel.fields.collectAsState()
@@ -67,7 +70,12 @@ fun SettingPanel(
     // SAF Launcher
     val activity = LocalActivity.current as Activity
     val folderPicker = rememberLauncherForActivityResult(OpenDocumentTree()) { uri ->
-        uri?.let { viewModel.onFolderPicked(it.toString()) }
+        uri?.let {
+            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            activity.contentResolver.takePersistableUriPermission(it, flags)
+            viewModel.onFolderPicked(it.toString())
+        }
     }
 
     // Dialog

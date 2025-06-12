@@ -39,6 +39,7 @@ fun DataSearchBar(
     DockedSearchBar(
         inputField = {
             SearchBarDefaults.InputField(
+                modifier = Modifier.fillMaxWidth(),
                 query = query,
                 onQueryChange = { query = it },
                 onSearch = { active = false },

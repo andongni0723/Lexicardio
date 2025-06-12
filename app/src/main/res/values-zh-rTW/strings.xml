@@ -7,7 +7,7 @@
     <string name="add">新增</string>
     <string name="library">圖書館</string>
     <string name="search">搜尋</string>
-    <string name="add_card">建立卡組</string>
+    <string name="add_card_set">建立卡組</string>
     <string name="add_folder">建立資料夾</string>
     <string name="general">一般</string>
     <string name="user_data_path">用戶資料路徑</string>

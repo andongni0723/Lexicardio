@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.MyApp
 import com.andongni.vcblearn.ui.panel.CardSetOverviewPanel
 import com.andongni.vcblearn.ui.panel.CreateCardSetScreen
+import com.andongni.vcblearn.ui.panel.FolderPanel
 import com.andongni.vcblearn.ui.panel.ImportCsvDataPanel
 import com.andongni.vcblearn.ui.panel.LearnModePanel
 import com.andongni.vcblearn.ui.panel.setting.SettingPanel
@@ -21,6 +22,7 @@ sealed class NavRoute(val route: String) {
     data object CreateCardSet : NavRoute("create_card_set")
     data object ImportCsvData : NavRoute("import_csv_data")
     data object Setting : NavRoute("setting")
+    data object Folder : NavRoute("folder")
     data object CardSetOverview : NavRoute("card_set_overview")
     data object LearnMode : NavRoute("learn_mode")
 }
@@ -69,6 +71,10 @@ fun LexicardioNavGraph() {
 
         composable(NavRoute.LearnMode.route) {
              LearnModePanel(navController)
+        }
+
+        composable(NavRoute.Folder.route) {
+            FolderPanel(navController)
         }
     }
 }

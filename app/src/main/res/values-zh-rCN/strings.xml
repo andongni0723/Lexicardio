@@ -9,7 +9,7 @@
     <string name="filter">筛选</string>
     <string name="create">创建</string>
     <string name="library">词库</string>
-    <string name="add_card">创建卡组</string>
+    <string name="add_card_set">创建卡组</string>
     <string name="add_folder">创建文件夹</string>
     <string name="create_card_set">创建卡组</string>
     <string name="create_folder">创建文件夹</string>

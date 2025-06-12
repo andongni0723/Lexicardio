@@ -1,13 +1,11 @@
-package com.andongni.vcblearn.ui.panel.setting
+package com.andongni.vcblearn.data
 
-import com.andongni.vcblearn.R
 import android.app.Activity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.*
-import com.andongni.vcblearn.data.SettingsRepository
+import com.andongni.vcblearn.R
 import com.andongni.vcblearn.locate.appLanguages
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*

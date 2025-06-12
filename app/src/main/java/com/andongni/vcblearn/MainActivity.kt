@@ -1,6 +1,7 @@
 package com.andongni.vcblearn
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.*
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -14,9 +15,13 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.andongni.vcblearn.data.DataManagerModel
 import com.andongni.vcblearn.data.SettingsRepository
 import com.andongni.vcblearn.route.*
 import com.andongni.vcblearn.ui.component.*
@@ -25,6 +30,8 @@ import com.andongni.vcblearn.ui.theme.LexicardioTheme
 import dagger.hilt.*
 import dagger.hilt.android.*
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -73,10 +80,14 @@ fun MyApp(navController: NavController) {
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             BottomAppBar {
+
+                val haptic = LocalHapticFeedback.current
+
                 // Home
                 NavigationBarItem(
                     selected = currentScreen == Screen.Home,
-                    onClick = { currentScreen = Screen.Home },
+                    onClick = { currentScreen = Screen.Home;
+                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick); },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     ),
@@ -89,6 +100,7 @@ fun MyApp(navController: NavController) {
                 NavigationBarItem(
                     selected = false,
                     onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove);
                         scope.launch {
                             addSheetShow = true
                         }
@@ -104,7 +116,8 @@ fun MyApp(navController: NavController) {
                 // Library
                 NavigationBarItem(
                     selected = currentScreen == Screen.Library,
-                    onClick = { currentScreen = Screen.Library; },
+                    onClick = { currentScreen = Screen.Library;
+                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick); },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     ),
@@ -322,6 +335,8 @@ fun LibraryTab(navController: NavController) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (page == 0)
                 CardSetPage(navController)
+            else if (page == 1)
+                FolderButtonGroup(navController)
             else
                 Text(text = "Page: ${tabs[page]}")
         }
@@ -346,6 +361,32 @@ fun CardSetPage(navController: NavController) {
         )
 
         CardSetGroup(navController)
+    }
+}
+
+@Composable
+fun FolderButtonGroup(
+    navController: NavController,
+    viewModel: DataManagerModel = hiltViewModel()
+) {
+    Log.d("FolderButtonGroup", "${viewModel.folders}")
+    val folderList by viewModel.folders.collectAsState()
+
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+            .padding(top = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Log.d("FolderButtonGroup", "start")
+        items(
+            items = folderList,
+            key = { it.name }
+        ) { folder ->
+            Log.d("FolderButtonGroup", "folder: $folder")
+            FolderButton(folder.name, navController)
+        }
+        Log.d("FolderButtonGroup", "end")
     }
 }
 
@@ -379,6 +420,26 @@ fun CardSet(navController: NavController) {
         ) {
             Text("Card Set Name", style = MaterialTheme.typography.titleMedium)
             Text("Description", style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.size(30.dp))
+        }
+    }
+}
+
+@Composable
+fun FolderButton(name: String = "(Unnamed)",navController: NavController) {
+    OutlinedButton(
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = ShapeDefaults.Medium,
+        onClick = { navController.navigate(NavRoute.Folder.route) },
+        contentPadding = PaddingValues(0.dp)
+    ) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(15.dp),
+        ) {
+            Text(name, style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.size(30.dp))
         }
     }

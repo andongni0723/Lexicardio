@@ -1,0 +1,103 @@
+package com.andongni.vcblearn.ui.panel
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.material3.carousel.rememberCarouselState
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.andongni.vcblearn.*
+import com.andongni.vcblearn.R
+import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
+import com.andongni.vcblearn.ui.theme.LexicardioTheme
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+fun FolderPanelPreview() {
+    LexicardioTheme {
+        val navController = rememberNavController()
+        val fakeVm = remember { FakeFolderPanelViewModel() }
+        FolderPanel(navController, fakeVm)
+    }
+}
+class FakeFolderPanelViewModel : CardSetEditorViewModel()
+/** 完全不要繼承真實的 VM，只提供 UI 需要的公開狀態 */
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FolderPanel(
+    navController: NavController,
+    viewModel: CardSetEditorViewModel = hiltViewModel()
+) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val pagerState = rememberPagerState(pageCount = { 5 })
+    var state = rememberCarouselState(itemCount = { 5 })
+    var state2 = rememberCarouselState(itemCount = { 5 })
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(Icons.Filled.Folder, contentDescription = "Folder")
+                    }
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Filled.MoreHoriz, contentDescription = "More")
+                    }
+                },
+                scrollBehavior = scrollBehavior
+            )
+        },
+    ) { inner ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(inner),
+            verticalArrangement = Arrangement.spacedBy(32.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            item {
+                Spacer(Modifier.padding(vertical = 16.dp))
+
+                Icon(
+                    imageVector = Icons.Filled.Folder,
+                    contentDescription = "資料夾",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(50.dp)
+                )
+                Text(
+                    stringResource(R.string.folder_name),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+            }
+
+            item {
+
+            }
+
+            items(10) {
+                CardSet(navController)
+            }
+        }
+    }
+}

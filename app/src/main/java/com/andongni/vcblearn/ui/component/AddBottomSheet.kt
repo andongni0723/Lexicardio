@@ -25,7 +25,7 @@ fun AddBottomSheet(
 
     if (show) {
         val addAction = listOf(
-            SheetAction(Icons.Filled.FileCopy, stringResource(R.string.add_card)) {
+            SheetAction(Icons.Filled.FileCopy, stringResource(R.string.add_card_set)) {
                 scope.launch {
                     navController.navigate(NavRoute.CreateCardSet.route)
                     sheetState.hide()
