@@ -1,5 +1,6 @@
 package com.andongni.vcblearn.ui.panel
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.rememberPagerState
@@ -13,39 +14,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.*
 import com.andongni.vcblearn.R
+import com.andongni.vcblearn.data.DataManagerModel
+import com.andongni.vcblearn.data.FolderEntry
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
+//region Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun FolderPanelPreview() {
     LexicardioTheme {
         val navController = rememberNavController()
-        val fakeVm = remember { FakeFolderPanelViewModel() }
-        FolderPanel(navController, fakeVm)
+        FolderPanel(navController)
     }
 }
-class FakeFolderPanelViewModel : CardSetEditorViewModel()
-/** 完全不要繼承真實的 VM，只提供 UI 需要的公開狀態 */
-
+//endregion
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderPanel(
     navController: NavController,
-    viewModel: CardSetEditorViewModel = hiltViewModel()
+    folderData: FolderEntry = FolderEntry(),
+    viewModel: DataManagerModel = hiltViewModel()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val pagerState = rememberPagerState(pageCount = { 5 })
-    var state = rememberCarouselState(itemCount = { 5 })
-    var state2 = rememberCarouselState(itemCount = { 5 })
 
     Scaffold(
         topBar = {
@@ -68,36 +68,30 @@ fun FolderPanel(
             )
         },
     ) { inner ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(inner),
-            verticalArrangement = Arrangement.spacedBy(32.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                .padding(inner)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item {
-                Spacer(Modifier.padding(vertical = 16.dp))
+            Spacer(Modifier.padding(vertical = 16.dp))
 
-                Icon(
-                    imageVector = Icons.Filled.Folder,
-                    contentDescription = "資料夾",
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(50.dp)
-                )
-                Text(
-                    stringResource(R.string.folder_name),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
+            Icon(
+                imageVector = Icons.Filled.Folder,
+                contentDescription = "資料夾",
+                tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.size(50.dp)
+            )
+            Text(
+                folderData.name,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
 
-            item {
+            CardSetGroup(navController, folderData.uri.toString())
 
-            }
-
-            items(10) {
-                CardSet(navController)
-            }
         }
+
     }
 }

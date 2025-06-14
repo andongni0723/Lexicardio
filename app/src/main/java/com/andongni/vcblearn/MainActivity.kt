@@ -21,8 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.andongni.vcblearn.data.DataManagerModel
-import com.andongni.vcblearn.data.SettingsRepository
+import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.*
 import com.andongni.vcblearn.ui.component.*
 import com.andongni.vcblearn.ui.panel.CreateFolderBottomSheet
@@ -30,9 +29,8 @@ import com.andongni.vcblearn.ui.theme.LexicardioTheme
 import dagger.hilt.*
 import dagger.hilt.android.*
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 @AndroidEntryPoint
@@ -86,8 +84,8 @@ fun MyApp(navController: NavController) {
                 // Home
                 NavigationBarItem(
                     selected = currentScreen == Screen.Home,
-                    onClick = { currentScreen = Screen.Home;
-                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick); },
+                    onClick = { currentScreen = Screen.Home
+                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick) },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     ),
@@ -100,7 +98,7 @@ fun MyApp(navController: NavController) {
                 NavigationBarItem(
                     selected = false,
                     onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove);
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         scope.launch {
                             addSheetShow = true
                         }
@@ -116,7 +114,7 @@ fun MyApp(navController: NavController) {
                 // Library
                 NavigationBarItem(
                     selected = currentScreen == Screen.Library,
-                    onClick = { currentScreen = Screen.Library;
+                    onClick = { currentScreen = Screen.Library
                         haptic.performHapticFeedback(HapticFeedbackType.ContextClick); },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
@@ -221,7 +219,7 @@ fun Home(navController: NavController) {
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(3) {
-                        CardSet(navController)
+                        CardSet(JsonEntry(), navController)
                     }
                 }
             }
@@ -384,33 +382,60 @@ fun FolderButtonGroup(
             key = { it.name }
         ) { folder ->
             Log.d("FolderButtonGroup", "folder: $folder")
-            FolderButton(folder.name, navController)
+            FolderButton(folder, navController)
         }
         Log.d("FolderButtonGroup", "end")
     }
 }
 
 @Composable
-fun CardSetGroup(navController: NavController) {
+fun CardSetGroup(
+    navController: NavController,
+    folderUri: String = "",
+    viewModel: DataManagerModel = hiltViewModel()
+) {
+    val targetFlow = remember(folderUri) {
+        if (folderUri.isBlank())
+            viewModel.allJsonFiles
+        else
+            viewModel.getCardSetInFolder(folderUri)
+    }
+
+    val cardSetList by targetFlow.collectAsState(emptyList())
+    LaunchedEffect(cardSetList) {
+        Log.d("CardSetGroup", "folderUri: $folderUri")
+        Log.d("CardSetGroup", "cardSetList: ${cardSetList.count()}")
+    }
+
     LazyColumn(
         Modifier
             .fillMaxSize()
             .padding(top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(10) {
-            CardSet(navController)
+        items(
+            items = cardSetList,
+        ) { cardSet ->
+            CardSet(cardSet, navController)
         }
     }
 }
 
 @Composable
-fun CardSet(navController: NavController) {
+fun CardSet(
+    cardSetData: JsonEntry,
+    navController: NavController
+) {
     OutlinedButton(
         modifier = Modifier
             .fillMaxWidth(),
         shape = ShapeDefaults.Medium,
-        onClick = { navController.navigate(NavRoute.CardSetOverview.route) },
+        onClick = {
+            navController.navigate(
+                NavRoute.CardSetOverview.route +
+                "?${NavRoute.CardSetOverview.nameArg}=${cardSetData.name}" +
+                "&${NavRoute.CardSetOverview.base64EncodeUriArg}=${ cardSetData.uri.encodeBase64Uri()}"
+            )},
         contentPadding = PaddingValues(0.dp)
     ) {
         Column(
@@ -418,20 +443,28 @@ fun CardSet(navController: NavController) {
                 .fillMaxSize()
                 .padding(15.dp),
         ) {
-            Text("Card Set Name", style = MaterialTheme.typography.titleMedium)
+            Text(cardSetData.name, style = MaterialTheme.typography.titleMedium)
             Text("Description", style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.size(30.dp))
         }
     }
 }
 
+@OptIn(ExperimentalEncodingApi::class)
 @Composable
-fun FolderButton(name: String = "(Unnamed)",navController: NavController) {
+fun FolderButton(
+    folderData: FolderEntry = FolderEntry(),
+    navController: NavController
+) {
     OutlinedButton(
         modifier = Modifier
             .fillMaxWidth(),
         shape = ShapeDefaults.Medium,
-        onClick = { navController.navigate(NavRoute.Folder.route) },
+        onClick = {
+            navController.navigate(NavRoute.Folder.route +
+                "?${NavRoute.Folder.nameArg}=${folderData.name}" +
+                "&${NavRoute.Folder.base64EncodeUriArg}=${folderData.uri.encodeBase64Uri()}")
+        },
         contentPadding = PaddingValues(0.dp)
     ) {
         Column(
@@ -439,7 +472,7 @@ fun FolderButton(name: String = "(Unnamed)",navController: NavController) {
                 .fillMaxSize()
                 .padding(15.dp),
         ) {
-            Text(name, style = MaterialTheme.typography.titleMedium)
+            Text(folderData.name, style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.size(30.dp))
         }
     }

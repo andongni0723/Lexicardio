@@ -5,25 +5,39 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.serialization.*
+import kotlinx.serialization.json.Json
 import javax.inject.*
 
 data class FolderEntry(
-    val name:String,
-    val uri: Uri
+    val name:String = "(Unnamed)",
+    val uri: Uri = "".toUri()
 )
 
 data class JsonEntry(
-    val name: String,
-    val uri: Uri
+    val name: String = "(Unnamed)",
+    val uri: Uri = "".toUri()
+)
+
+@Serializable
+data class CardDetail(
+    @SerialName("word")
+    val word: String = "",
+    @SerialName("definition")
+    val definition: String = "",
+)
+
+@Serializable
+data class CardSetJson(
+    @SerialName("card_set_name")
+    val name: String = "(Unnamed)",
+    @SerialName("words")
+    val cards: List<CardDetail> = emptyList()
 )
 
 @Singleton
@@ -31,32 +45,6 @@ class DataManager @Inject constructor(
     private val settingRepo: SettingsRepository,
     @ApplicationContext private val context: Context,
 ) {
-    init {
-        Log.d("DataManager", "init")
-        CoroutineScope(Dispatchers.Default).launch {
-            userRoot
-                .onEach { doc ->
-                    if (doc == null) {
-                        Log.e("DataManager", "userRoot = null  (DocumentFile 解析失敗或沒有 SAF 權限)")
-                    } else {
-                        val files = doc.listFiles()
-                        Log.d(
-                            "DataManager",
-                            "userRoot = ${doc.uri}  | " +
-                                    "isDir=${doc.isDirectory}  | " +
-                                    "children=${files.size}"
-                        )
-                        files.forEach { f ->
-                            Log.d(
-                                "DataManager",
-                                "  · ${if (f.isDirectory) "[DIR]" else "[FILE]"} ${f.name}"
-                            )
-                        }
-                    }
-                }
-                .collect()
-        }
-    }
     private val userRoot: Flow<DocumentFile?> = settingRepo.userFolder
         .map { path ->
             runCatching { DocumentFile.fromTreeUri(context, path.toUri()) }.getOrNull()
@@ -89,7 +77,7 @@ class DataManager @Inject constructor(
             root.listFiles()
                 .filter { it.isDirectory }
                 .forEach { dir ->
-                    addAll(root.listFiles().toJsonEntries())
+                    addAll(dir.listFiles().toJsonEntries())
                 }
         }
     }
@@ -98,26 +86,47 @@ class DataManager @Inject constructor(
      * Lists every valid `.json` file that lives **inside a specific folder**.
      *
      * @param folderUri  SAF tree URI of the folder to inspect.
-     * @return           A list of [JsonEntry]; returns empty if the URI is invalid.
+     * @return           A flow that emits exactly one [List<JsonEntry>] and then completes.
      */
-    suspend fun listJsonInFolder(folderUri: String): List<JsonEntry> =
+     fun listJsonInFolder(folderUri: String): Flow<List<JsonEntry>> =
+        flow {
+            val dir = DocumentFile.fromTreeUri(context, folderUri.toUri())
+
+            emit(dir?.listFiles()?.toJsonEntries() ?: emptyList())
+        }.flowOn(Dispatchers.IO)
+
+
+    suspend fun loadCardSetJson(uri: Uri): CardSetJson =
         withContext(Dispatchers.IO) {
-            val doc = DocumentFile.fromTreeUri(context, folderUri.toUri())
-            doc?.listFiles()?.toJsonEntries() ?: emptyList()
+            runCatching {
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    val raw = input.bufferedReader().readText()
+
+                    Log.d("DataManager", "raw: $raw")
+                    Json.decodeFromString<CardSetJson>(raw)
+                } ?: CardSetJson("(non input stream)")
+            }.getOrElse { e ->
+                Log.e("DataManager", "JSON parse failed for $uri", e)
+                CardSetJson()
+            }
         }
 
     /** Converts an array of [DocumentFile]s to a list of [JsonEntry]s. */
     private fun Array<DocumentFile>.toJsonEntries(): List<JsonEntry> =
         filter { it.isFile && it.name?.endsWith(".json", ignoreCase = true) == true }
             .filter { isValidJson(it) }
-            .map { JsonEntry(it.name ?: "(Unnamed)", it.uri) }
+            .map { file ->
+                val rawName = file.name ?: "(Unnamed)"
+                val displayName = rawName.substringBeforeLast(".", rawName)
+                JsonEntry(displayName, file.uri)
+            }
 
     private fun isValidJson(file: DocumentFile): Boolean = true
 }
 
 @HiltViewModel
 class DataManagerModel @Inject constructor(
-    dataManager: DataManager,
+    private val dataManager: DataManager,
 ) : ViewModel() {
 
     val folders: StateFlow<List<FolderEntry>> = dataManager.allSubFolder
@@ -126,4 +135,22 @@ class DataManagerModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+    val allJsonFiles: StateFlow<List<JsonEntry>> = dataManager.allJsonFiles
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
+    fun getCardSetInFolder(folderUri: String): StateFlow<List<JsonEntry>> =
+        dataManager.listJsonInFolder(folderUri)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
+
+    suspend fun getCardSetJsonDetail(uri: Uri): CardSetJson =
+        dataManager.loadCardSetJson(uri)
 }

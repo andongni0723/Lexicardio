@@ -1,6 +1,6 @@
 package com.andongni.vcblearn.ui.panel
 
-import  com.andongni.vcblearn.R
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,7 +12,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.carousel.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.*
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -21,6 +22,9 @@ import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.andongni.vcblearn.R
+import com.andongni.vcblearn.data.DataManagerModel
+import com.andongni.vcblearn.data.JsonEntry
 import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
@@ -32,11 +36,9 @@ import com.andongni.vcblearn.ui.theme.LexicardioTheme
 fun CardSetOverviewPanelPreview() {
     LexicardioTheme {
         val navController = rememberNavController()
-        val fakeVm = remember { FakeCardSetOverviewPanelViewModel() }
-        CardSetOverviewPanel(navController, fakeVm)
+        CardSetOverviewPanel(navController)
     }
 }
-class FakeCardSetOverviewPanelViewModel : CardSetEditorViewModel()
 //endregion
 
 
@@ -44,13 +46,16 @@ class FakeCardSetOverviewPanelViewModel : CardSetEditorViewModel()
 @Composable
 fun CardSetOverviewPanel(
     navController: NavController,
-    viewModel: CardSetEditorViewModel = hiltViewModel()
+    cardSetData: JsonEntry = JsonEntry(),
+    viewModel: DataManagerModel = hiltViewModel()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val pagerState = rememberPagerState(pageCount = { 5 })
     var state = rememberCarouselState(itemCount = { 5 })
-    var state2 = rememberCarouselState(itemCount = { 5 })
 
+    LaunchedEffect(cardSetData.uri) {
+        var data = viewModel.getCardSetJsonDetail(cardSetData.uri)
+        Log.d("DataManager, CardSetOverviewPanel", "data: $data")
+    }
 
     Scaffold(
         topBar = {
@@ -118,7 +123,7 @@ fun CardSetOverviewPanel(
 
             item {
                 Text(
-                    "Card Set Name",
+                    cardSetData.name,
                     modifier = Modifier.padding(top = 16.dp),
                     style = MaterialTheme.typography.titleLarge
                 )
