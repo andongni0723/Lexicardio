@@ -1,10 +1,10 @@
 package com.andongni.vcblearn.ui.panel
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -12,9 +12,10 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.carousel.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,10 +24,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
-import com.andongni.vcblearn.data.DataManagerModel
-import com.andongni.vcblearn.data.JsonEntry
+import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
-import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
 //region Preview
@@ -50,11 +49,8 @@ fun CardSetOverviewPanel(
     viewModel: DataManagerModel = hiltViewModel()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    var state = rememberCarouselState(itemCount = { 5 })
-
-    LaunchedEffect(cardSetData.uri) {
-        var data = viewModel.getCardSetJsonDetail(cardSetData.uri)
-        Log.d("DataManager, CardSetOverviewPanel", "data: $data")
+    val cardSetDetail by produceState<CardSetJson>(CardSetJson(), cardSetData.uri) {
+        value = viewModel.getCardSetJsonDetail(cardSetData.uri)
     }
 
     Scaffold(
@@ -87,38 +83,11 @@ fun CardSetOverviewPanel(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         ) {
             item {
-                HorizontalMultiBrowseCarousel(
-                    state = state,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    itemSpacing = 8.dp,
-                    flingBehavior = CarouselDefaults.multiBrowseFlingBehavior(state),
-                    preferredItemWidth = 250.dp
-                ) {  page ->
-                    Button(
-                        onClick = {},
-                        modifier = Modifier.maskClip(MaterialTheme.shapes.large),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Word${page + 1}",
-                                fontSize = 24.sp,
-                                style = MaterialTheme.typography.headlineMedium
-                            )
-                        }
-
-                    }
-                }
-
+                WordCarousel(
+                    cardList = cardSetDetail.cards,
+                    state = rememberCarouselState { cardSetDetail.cards.count() },
+                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                )
             }
 
             item {
@@ -131,7 +100,7 @@ fun CardSetOverviewPanel(
 
             item {
                 Text(
-                    "30" + stringResource(R.string.words),
+                    cardSetDetail.cards.count().toString() + stringResource(R.string.words),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
@@ -187,15 +156,56 @@ fun CardSetOverviewPanel(
                 Text("Cards")
             }
 
-            items(10) {
-                WordCard()
+            items(
+                items = cardSetDetail.cards,
+            ) { card ->
+                WordCard(card)
             }
         }
     }
 }
 
 @Composable
-fun WordCard() {
+@OptIn(ExperimentalMaterial3Api::class)
+fun WordCarousel(
+    cardList: List<CardDetail>,
+    state: CarouselState,
+    modifier: Modifier = Modifier
+) {
+    Log.d("WordCarousel", "cardList: ${cardList.count()}")
+    HorizontalMultiBrowseCarousel(
+        state = state,
+        flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(state),
+        modifier = modifier,
+        itemSpacing = 8.dp,
+        preferredItemWidth = 250.dp
+    ) {  page ->
+        Button(
+            onClick = {},
+            modifier = Modifier.maskClip(MaterialTheme.shapes.large),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = buttonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = cardList[page].word,
+                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
+
+        }
+    }
+}
+
+@Composable
+fun WordCard(card: CardDetail) {
     Card(
         modifier = Modifier.fillMaxWidth().height(100.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -207,10 +217,10 @@ fun WordCard() {
         ) {
 
             Box(
-                Modifier.width(80.dp)
+                Modifier.width(120.dp)
             ) {
                 Text(
-                    "Word",
+                    card.word,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -221,7 +231,7 @@ fun WordCard() {
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.surface
             )
-            Text("中文",
+            Text(card.definition,
                 modifier = Modifier,
                 style = MaterialTheme.typography.headlineMedium)
         }

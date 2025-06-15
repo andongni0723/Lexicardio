@@ -24,7 +24,6 @@ import androidx.navigation.NavController
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.*
 import com.andongni.vcblearn.ui.component.*
-import com.andongni.vcblearn.ui.panel.CreateFolderBottomSheet
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 import dagger.hilt.*
 import dagger.hilt.android.*
@@ -71,11 +70,13 @@ fun MyApp(navController: NavController) {
     var addSheetShow by remember { mutableStateOf(false) }
     var createFolderSheetShow by remember { mutableStateOf(false) }
     val createFolderSheetState = rememberModalBottomSheetState(true)
+    val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     // Footer Nav Bar and Event Bottom Sheet
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         bottomBar = {
             BottomAppBar {
 
@@ -93,7 +94,6 @@ fun MyApp(navController: NavController) {
                     label = { Text(stringResource(R.string.home),
                         style = MaterialTheme.typography.titleSmall) },
                 )
-
                 // Add
                 NavigationBarItem(
                     selected = false,
@@ -135,23 +135,24 @@ fun MyApp(navController: NavController) {
             }
         }
 
-        AddBottomSheet(navController, addSheetState, addSheetShow, scope) {
+        AddBottomSheet(navController, addSheetState, snackBarHostState, addSheetShow, scope) {
             addSheetShow = it
         }
 
-        // Create Folder Bottom Sheet
-        if (createFolderSheetShow) {
-            CreateFolderBottomSheet(
-                sheetState = createFolderSheetState,
-                createOnClick = {
-                    scope.launch { createFolderSheetState.hide() }.invokeOnCompletion {
-                        if (!createFolderSheetState.isVisible)
-                            createFolderSheetShow = false
-                    }
-                },
-                onDismiss = { createFolderSheetShow = false }
-            )
-        }
+//        // Create Folder Bottom Sheet
+//        if (createFolderSheetShow) {
+//            CreateFolderBottomSheet(
+//                sheetState = createFolderSheetState,
+//                snackBarHostState = snackBarHostState,
+//                createOnClick = {
+//                    scope.launch { createFolderSheetState.hide(); }.invokeOnCompletion {
+//                        if (!createFolderSheetState.isVisible)
+//                            createFolderSheetShow = false
+//                    }
+//                },
+//                onDismiss = { createFolderSheetShow = false }
+//            )
+//        }
     }
 }
 

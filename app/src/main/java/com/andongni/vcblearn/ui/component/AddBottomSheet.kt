@@ -16,6 +16,7 @@ import kotlinx.coroutines.*
 fun AddBottomSheet(
     navController: NavController,
     sheetState: SheetState,
+    snackBarHostState: SnackbarHostState,
     show: Boolean,
     scope: CoroutineScope,
     onShowChange: (Boolean) -> Unit,
@@ -50,6 +51,7 @@ fun AddBottomSheet(
     if (createFolderSheetShow) {
         CreateFolderBottomSheet(
             sheetState = createFolderSheetState,
+            snackBarHostState = snackBarHostState,
             createOnClick = {
                 scope.launch { createFolderSheetState.hide() }.invokeOnCompletion {
                     if (!createFolderSheetState.isVisible)

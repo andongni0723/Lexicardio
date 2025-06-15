@@ -62,6 +62,7 @@ class DataManager @Inject constructor(
             ?: emptyList()
     }
 
+
     /**
      * Reactive list of **all `.json` files** in the root and **one level deep**
      * in its child folders.
@@ -96,6 +97,12 @@ class DataManager @Inject constructor(
         }.flowOn(Dispatchers.IO)
 
 
+    /**
+     * Decode json file from [uri] to [CardSetJson].
+     *
+     * @param uri  The uri of the json file.
+     * @return     [CardSetJson] include the detail in the card set.
+     */
     suspend fun loadCardSetJson(uri: Uri): CardSetJson =
         withContext(Dispatchers.IO) {
             runCatching {
@@ -110,6 +117,22 @@ class DataManager @Inject constructor(
                 CardSetJson()
             }
         }
+
+    /**
+     * Create a new folder under the user root.
+     *
+     * @return  `true` if the folder is created successfully.
+     *          `false` if the user root is `null` or the folder already exists.
+     */
+    suspend fun createSubFolder(folderName: String): Boolean = withContext(Dispatchers.IO) {
+        val rootUri = settingRepo.userFolder.firstOrNull() ?: return@withContext false
+        val root = DocumentFile.fromTreeUri(context, rootUri.toUri()) ?: return@withContext false
+
+        if (!root.canWrite()) return@withContext false
+        if (root.findFile(folderName) != null) return@withContext false
+
+        return@withContext root.createDirectory(folderName) != null
+    }
 
     /** Converts an array of [DocumentFile]s to a list of [JsonEntry]s. */
     private fun Array<DocumentFile>.toJsonEntries(): List<JsonEntry> =
@@ -129,6 +152,11 @@ class DataManagerModel @Inject constructor(
     private val dataManager: DataManager,
 ) : ViewModel() {
 
+    /**
+     * Reactive list of **all direct child folders** under the user root.
+     *
+     * Emits an empty list when the root is `null` or contains no folders.
+     */
     val folders: StateFlow<List<FolderEntry>> = dataManager.allSubFolder
         .stateIn(
             scope = viewModelScope,
@@ -136,6 +164,10 @@ class DataManagerModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    /**
+     * Reactive list of **all `.json` files** in the root and **one level deep**
+     * in its child folders.
+     */
     val allJsonFiles: StateFlow<List<JsonEntry>> = dataManager.allJsonFiles
         .stateIn(
             scope = viewModelScope,
@@ -143,6 +175,13 @@ class DataManagerModel @Inject constructor(
             initialValue = emptyList()
         )
 
+
+    /**
+     *  Lists every valid `.json` file that lives **inside a specific folder**.
+     *
+     *  @param folderUri  SAF tree URI of the folder to inspect.
+     *  @return           A flow that emits exactly one [List<JsonEntry>] and then completes.
+     */
     fun getCardSetInFolder(folderUri: String): StateFlow<List<JsonEntry>> =
         dataManager.listJsonInFolder(folderUri)
             .stateIn(
@@ -151,6 +190,21 @@ class DataManagerModel @Inject constructor(
                 initialValue = emptyList()
             )
 
+    /**
+     *  Decode json file from [uri] to [CardSetJson].
+     *
+     *  @param uri  The uri of the json file.
+     *  @return     [CardSetJson] include the detail in the card set.
+     */
     suspend fun getCardSetJsonDetail(uri: Uri): CardSetJson =
         dataManager.loadCardSetJson(uri)
+
+    /**
+     *  Create a new folder under the user root.
+     *
+     *  @param name  The name of the new folder.
+     *  @return      `true` if the folder is created successfully.
+     */
+    suspend fun createFolder(name: String): Boolean =
+        dataManager.createSubFolder(name)
 }
