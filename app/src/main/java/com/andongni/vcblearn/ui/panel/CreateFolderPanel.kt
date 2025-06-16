@@ -47,6 +47,7 @@ fun CreateFolderBottomSheet(
 ) {
     val scope = rememberCoroutineScope()
     var newFolderName by remember { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         sheetState = sheetState,
@@ -79,7 +80,8 @@ fun CreateFolderBottomSheet(
                 onValueChange = { newFolderName = it },
                 label = { Text(stringResource(R.string.folder_name)) },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = isError,
             )
 
             // Create Folder Button

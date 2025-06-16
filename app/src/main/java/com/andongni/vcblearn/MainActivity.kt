@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.graphicsLayer
@@ -364,32 +366,43 @@ fun CardSetPage(navController: NavController) {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun FolderButtonGroup(
     navController: NavController,
     viewModel: DataManagerModel = hiltViewModel()
 ) {
-    Log.d("FolderButtonGroup", "${viewModel.folders}")
     val folderList by viewModel.folders.collectAsState()
+    val refreshing by viewModel.isFoldersRefreshing.collectAsState()
+    val scope = rememberCoroutineScope()
 
-    LazyColumn(
-        Modifier
-            .fillMaxSize()
-            .padding(top = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    PullToRefreshBox(
+        isRefreshing = refreshing,
+        onRefresh = {
+            scope.launch {
+                viewModel.reloadFolders()
+            }
+        },
     ) {
-        Log.d("FolderButtonGroup", "start")
-        items(
-            items = folderList,
-            key = { it.name }
-        ) { folder ->
-            Log.d("FolderButtonGroup", "folder: $folder")
-            FolderButton(folder, navController)
+        LazyColumn(
+            Modifier
+                .fillMaxSize()
+                .padding(top = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(
+                items = folderList,
+                key = { it.name }
+            ) { folder ->
+                Log.d("FolderButtonGroup", "folder: $folder")
+                FolderButton(folder, navController)
+            }
         }
-        Log.d("FolderButtonGroup", "end")
     }
+    
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun CardSetGroup(
     navController: NavController,
     folderUri: String = "",
@@ -402,22 +415,29 @@ fun CardSetGroup(
             viewModel.getCardSetInFolder(folderUri)
     }
 
-    val cardSetList by targetFlow.collectAsState(emptyList())
-    LaunchedEffect(cardSetList) {
-        Log.d("CardSetGroup", "folderUri: $folderUri")
-        Log.d("CardSetGroup", "cardSetList: ${cardSetList.count()}")
-    }
+    val cardSetList by targetFlow.collectAsState()
+    val refreshing by viewModel.isJsonRefreshing.collectAsState()
+    val scope = rememberCoroutineScope()
 
-    LazyColumn(
-        Modifier
-            .fillMaxSize()
-            .padding(top = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    PullToRefreshBox(
+        isRefreshing = refreshing,
+        onRefresh = {
+            scope.launch {
+                viewModel.reloadAllJsonFiles()
+            }
+        },
     ) {
-        items(
-            items = cardSetList,
-        ) { cardSet ->
-            CardSet(cardSet, navController)
+        LazyColumn(
+            Modifier
+                .fillMaxSize()
+                .padding(top = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(
+                items = cardSetList,
+            ) { cardSet ->
+                CardSet(cardSet, navController)
+            }
         }
     }
 }

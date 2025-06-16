@@ -172,7 +172,8 @@ fun WordCarousel(
     state: CarouselState,
     modifier: Modifier = Modifier
 ) {
-    Log.d("WordCarousel", "cardList: ${cardList.count()}")
+    if(cardList.isEmpty()) return
+
     HorizontalMultiBrowseCarousel(
         state = state,
         flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(state),
