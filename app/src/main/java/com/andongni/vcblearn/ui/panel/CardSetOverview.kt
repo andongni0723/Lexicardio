@@ -1,7 +1,5 @@
 package com.andongni.vcblearn.ui.panel
 
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
@@ -14,8 +12,6 @@ import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.carousel.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -176,9 +172,9 @@ fun WordCarousel(
 
     HorizontalMultiBrowseCarousel(
         state = state,
-        flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(state),
         modifier = modifier,
         itemSpacing = 8.dp,
+        flingBehavior = CarouselDefaults.multiBrowseFlingBehavior(state),
         preferredItemWidth = 250.dp
     ) {  page ->
         Button(

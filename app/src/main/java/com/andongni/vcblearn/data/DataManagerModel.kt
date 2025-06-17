@@ -52,9 +52,9 @@ class DataManager @Inject constructor(
 
     val allSubFolder: Flow<List<FolderEntry>> = userRoot.map { root ->
         root?.listFiles()
-            ?.filter { it.isDirectory }
-            ?.map { FolderEntry(it.name ?: "(Unnamed)", it.uri) }
-            ?: emptyList()
+            .orEmpty()
+            .filter { it.isDirectory }
+            .map { FolderEntry(it.name ?: "(Unnamed)", it.uri) }
     }
 
     val allJsonFiles: Flow<List<JsonEntry>> = userRoot.map { root ->
@@ -71,7 +71,7 @@ class DataManager @Inject constructor(
         }
     }
 
-     fun listJsonInFolder(folderUri: String): Flow<List<JsonEntry>> =
+     fun jsonInFolder(folderUri: String): Flow<List<JsonEntry>> =
         flow {
             val dir = DocumentFile.fromTreeUri(context, folderUri.toUri())
 
@@ -93,7 +93,7 @@ class DataManager @Inject constructor(
             }
         }
 
-    suspend fun createSubFolder(folderName: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun createFolder(folderName: String): Boolean = withContext(Dispatchers.IO) {
         val rootUri = settingRepo.userFolder.firstOrNull() ?: return@withContext false
         val root = DocumentFile.fromTreeUri(context, rootUri.toUri()) ?: return@withContext false
 
@@ -121,6 +121,16 @@ class DataManagerModel @Inject constructor(
     private val dataManager: DataManager,
 ) : ViewModel() {
 
+    private val _folders = MutableStateFlow<List<FolderEntry>>(emptyList())
+    val folders: StateFlow<List<FolderEntry>> = _folders
+    private val _isFoldersRefreshing = MutableStateFlow(false)
+    val isFoldersRefreshing: StateFlow<Boolean> = _isFoldersRefreshing.asStateFlow()
+
+    private val _allJsonFiles = MutableStateFlow<List<JsonEntry>>(emptyList())
+    val allJsonFiles: StateFlow<List<JsonEntry>> = _allJsonFiles
+    private val _isJsonRefreshing = MutableStateFlow(false)
+    val isJsonRefreshing: StateFlow<Boolean> = _isJsonRefreshing.asStateFlow()
+
     init {
         dataManager.allSubFolder
             .onEach { _folders.value = it }
@@ -131,76 +141,26 @@ class DataManagerModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private val _folders = MutableStateFlow<List<FolderEntry>>(emptyList())
-    /**
-     * Reactive list of **all direct child folders** under the user root.
-     *
-     * Emits an empty list when the root is `null` or contains no folders.
-     */
-    val folders: StateFlow<List<FolderEntry>> = _folders
-    private val _isFoldersRefreshing = MutableStateFlow(false)
-    val isFoldersRefreshing: StateFlow<Boolean> = _isFoldersRefreshing.asStateFlow()
-
-    private val _allJsonFiles = MutableStateFlow<List<JsonEntry>>(emptyList())
-    /**
-     * Reactive list of **all `.json` files** in the root and **one level deep**
-     * in its child folders.
-     */
-    val allJsonFiles: StateFlow<List<JsonEntry>> = _allJsonFiles
-    private val _isJsonRefreshing = MutableStateFlow(false)
-    val isJsonRefreshing: StateFlow<Boolean> = _isJsonRefreshing.asStateFlow()
-
-    /**
-     *  Lists every valid `.json` file that lives **inside a specific folder**.
-     *
-     *  @param folderUri  SAF tree URI of the folder to inspect.
-     *  @return           A flow that emits exactly one [List<JsonEntry>] and then completes.
-     */
+    /**  Lists every valid `.json` file that lives **inside a specific folder */
     fun getCardSetInFolder(folderUri: String): StateFlow<List<JsonEntry>> =
-        dataManager.listJsonInFolder(folderUri)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList()
-            )
+        dataManager.jsonInFolder(folderUri)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    /**
-     *  Decode json file from [uri] to [CardSetJson].
-     *
-     *  @param uri  The uri of the json file.
-     *  @return     [CardSetJson] include the detail in the card set.
-     */
+    /**  Decode json file from [uri] to [CardSetJson]. */
     suspend fun getCardSetJsonDetail(uri: Uri): CardSetJson =
         dataManager.loadCardSetJson(uri)
 
-    /**
-     *  Create a new folder under the user root.
-     *
-     *  @param name  The name of the new folder.
-     *  @return      `true` if the folder is created successfully.
-     */
+    /** Create a new folder under the user root. */
     suspend fun createFolder(name: String): Boolean =
-        dataManager.createSubFolder(name)
+        dataManager.createFolder(name)
 
-    suspend fun reloadFolders() {
-        _isFoldersRefreshing.value = true
-        try {
-            val latest = dataManager.allSubFolder.first()
-            _folders.emit(latest)
-            delay(16)
-        } finally {
-            _isFoldersRefreshing.value = false
-        }
-    }
+    suspend fun reloadFolders() =
+        _isFoldersRefreshing.refresh { _folders.emit(dataManager.allSubFolder.first()) }
 
-    suspend fun reloadAllJsonFiles() {
-        _isJsonRefreshing.value = true
-        try {
-            val latest = dataManager.allJsonFiles.first()
-            _allJsonFiles.emit(latest)
-            delay(16)
-        } finally {
-            _isJsonRefreshing.value = false
-        }
+    suspend fun reloadAllJsonFiles() =
+        _isJsonRefreshing.refresh { _allJsonFiles.emit(dataManager.allJsonFiles.first()) }
+
+    suspend fun <T> MutableStateFlow<Boolean>.refresh(block: suspend () -> T) {
+        emit(true); block(); delay(16); emit(false);
     }
 }
