@@ -1,28 +1,36 @@
 package com.andongni.vcblearn.ui.panel
 
-import com.andongni.vcblearn.R
+import android.util.Log
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.CardDefaults.cardColors
 import androidx.compose.material3.ExposedDropdownMenuDefaults.textFieldColors
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.andongni.vcblearn.R
+import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,9 +51,13 @@ class FakeCardSetEditorViewModel : CardSetEditorViewModel()
 @Composable
 fun CreateCardSetScreen(
     navController: NavController,
-    viewModel: CardSetEditorViewModel = hiltViewModel()
+    viewModel: CardSetEditorViewModel = hiltViewModel(),
+    dataViewModel: DataManagerModel = hiltViewModel()
 ) {
+    val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val cards by viewModel.cards.collectAsState()
+    var setName by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -61,7 +73,13 @@ fun CreateCardSetScreen(
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Filled.Settings, contentDescription = "Settings")
                     }
-                    IconButton(onClick = { /*viewModel.save();*/ navController.popBackStack() }) {
+                    IconButton(onClick = {
+                        val cardSet = CardSetJson(setName, viewModel.cards.value)
+                        scope.launch {
+                            val ok = dataViewModel.createCardSet(cardSet)
+                            if (ok) navController.popBackStack()
+                        }
+                    }) {
                         Icon(Icons.Filled.Check, contentDescription = "Create")
                     }
                 },
@@ -69,7 +87,7 @@ fun CreateCardSetScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { /*viewModel.addEmptyCard()*/ }) {
+            FloatingActionButton(onClick = { viewModel.addCard() }) {
                 Icon(Icons.Filled.Add, contentDescription = "Add")
             }
         }
@@ -84,8 +102,8 @@ fun CreateCardSetScreen(
         ) {
             item {
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
+                    value = setName,
+                    onValueChange = { setName = it },
                     label = { Text(stringResource(R.string.title)) },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -105,8 +123,12 @@ fun CreateCardSetScreen(
                 }
             }
 
-            items(10) {
-                CardEdit()
+            items(cards, key = { it.id }) { card ->
+                CardEditItem(
+                    card = card,
+                    onCardChange = { newCard -> viewModel.updateCard(card.id, newCard) },
+                    onDelete = { viewModel.removeCard(card.id) }
+                )
             }
 
             item { Spacer(modifier = Modifier.height(96.dp)) }
@@ -114,16 +136,85 @@ fun CreateCardSetScreen(
     }
 }
 
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun CardEditItem(
+    card: CardDetail,
+    onCardChange: (CardDetail) -> Unit,
+    onDelete: () -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { it == SwipeToDismissBoxValue.EndToStart},
+        positionalThreshold = { it * 0.5f }
+    )
+
+    if(dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+        onDelete()
+        LaunchedEffect(Unit) {
+            dismissState.reset()
+        }
+    }
+
+    val haptic = LocalHapticFeedback.current
+    LaunchedEffect(dismissState) {
+        snapshotFlow { dismissState.targetValue }   // 只關注目標 state
+            .distinctUntilChanged()                 // 同一狀態重複排除
+            .collect { target ->
+                if (target == SwipeToDismissBoxValue.EndToStart ||
+                    target == SwipeToDismissBoxValue.StartToEnd) {
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }
+            }
+    }
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            Card(
+                modifier = Modifier
+                    .fillMaxSize(),
+                shape = ShapeDefaults.Large,
+                colors = cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Icon(
+                        imageVector =
+                            if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart)
+                                Icons.Filled.Delete
+                            else
+                                Icons.Outlined.Delete,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+    ) {
+        CardEdit(card, onCardChange)
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CardEdit() {
+private fun CardEdit(
+    card: CardDetail,
+    onCardChange: (CardDetail) -> Unit,
+) {
+    var word       by remember(card) { mutableStateOf(card.word) }
+    var definition by remember(card) { mutableStateOf(card.definition) }
+
+    LaunchedEffect(word, definition) {
+        onCardChange(CardDetail(card.id, word, definition))
+    }
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         shape = ShapeDefaults.Medium,
-        colors = cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        )
+        colors = cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(
             Modifier
@@ -135,9 +226,6 @@ fun CardEdit() {
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             )
-
-            var word by rememberSaveable { mutableStateOf("") }
-            var definition by rememberSaveable { mutableStateOf("") }
 
             TextField(
                 value = word,

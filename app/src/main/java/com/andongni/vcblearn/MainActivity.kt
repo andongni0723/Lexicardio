@@ -15,6 +15,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -67,11 +68,9 @@ private enum class Screen { Home, Library }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyApp(navController: NavController) {
-    var currentScreen by remember { mutableStateOf(Screen.Home) }
+    var currentScreen by rememberSaveable { mutableStateOf(Screen.Home) }
     val addSheetState = rememberModalBottomSheetState()
     var addSheetShow by remember { mutableStateOf(false) }
-    var createFolderSheetShow by remember { mutableStateOf(false) }
-    val createFolderSheetState = rememberModalBottomSheetState(true)
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -140,21 +139,6 @@ fun MyApp(navController: NavController) {
         AddBottomSheet(navController, addSheetState, snackBarHostState, addSheetShow, scope) {
             addSheetShow = it
         }
-
-//        // Create Folder Bottom Sheet
-//        if (createFolderSheetShow) {
-//            CreateFolderBottomSheet(
-//                sheetState = createFolderSheetState,
-//                snackBarHostState = snackBarHostState,
-//                createOnClick = {
-//                    scope.launch { createFolderSheetState.hide(); }.invokeOnCompletion {
-//                        if (!createFolderSheetState.isVisible)
-//                            createFolderSheetShow = false
-//                    }
-//                },
-//                onDismiss = { createFolderSheetShow = false }
-//            )
-//        }
     }
 }
 
@@ -447,11 +431,14 @@ fun CardSet(
     cardSetData: JsonEntry,
     navController: NavController
 ) {
+    val haptic = LocalHapticFeedback.current
+
     OutlinedButton(
         modifier = Modifier
             .fillMaxWidth(),
         shape = ShapeDefaults.Medium,
         onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
             navController.navigate(
                 NavRoute.CardSetOverview.route +
                 "?${NavRoute.CardSetOverview.nameArg}=${cardSetData.name}" +
@@ -477,11 +464,13 @@ fun FolderButton(
     folderData: FolderEntry = FolderEntry(),
     navController: NavController
 ) {
+    val haptic = LocalHapticFeedback.current
     OutlinedButton(
         modifier = Modifier
             .fillMaxWidth(),
         shape = ShapeDefaults.Medium,
         onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
             navController.navigate(NavRoute.Folder.route +
                 "?${NavRoute.Folder.nameArg}=${folderData.name}" +
                 "&${NavRoute.Folder.base64EncodeUriArg}=${folderData.uri.encodeBase64Uri()}")

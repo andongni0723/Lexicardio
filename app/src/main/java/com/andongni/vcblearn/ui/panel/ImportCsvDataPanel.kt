@@ -154,9 +154,9 @@ fun ImportCsvDataPanel(
                 }
             }
 
-            items(10) {
-                CardEdit()
-            }
+//            items(10) {
+//                CardEdit()
+//            }
         }
     }
 }

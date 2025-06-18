@@ -12,6 +12,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
+import java.util.UUID
 import javax.inject.*
 
 data class FolderEntry(
@@ -26,6 +27,8 @@ data class JsonEntry(
 
 @Serializable
 data class CardDetail(
+    @SerialName("id")
+    val id: String = UUID.randomUUID().toString(),
     @SerialName("word")
     val word: String = "",
     @SerialName("definition")
@@ -83,7 +86,6 @@ class DataManager @Inject constructor(
             runCatching {
                 context.contentResolver.openInputStream(uri)?.use { input ->
                     val raw = input.bufferedReader().readText()
-
                     Log.d("DataManager", "raw: $raw")
                     Json.decodeFromString<CardSetJson>(raw)
                 } ?: CardSetJson("(non input stream)")
@@ -101,6 +103,33 @@ class DataManager @Inject constructor(
         if (root.findFile(folderName) != null) return@withContext false
 
         return@withContext root.createDirectory(folderName) != null
+    }
+
+    suspend fun createCardSet(cardSetJson: CardSetJson): Boolean = withContext(Dispatchers.IO) {
+        val rootUri = settingRepo.userFolder.firstOrNull() ?: return@withContext false
+        val root = DocumentFile.fromTreeUri(context, rootUri.toUri()) ?: return@withContext false
+        if (!root.canWrite()) return@withContext false
+
+        var baseName = if(cardSetJson.name.isNotBlank()) cardSetJson.name else "(Unnamed)"
+        var fileName = "$baseName.json"
+
+        // Check if file already exists
+        var idx = 1
+        while (root.findFile(fileName) != null) {
+            fileName = "$baseName ($idx).json"
+            idx++
+        }
+
+        // Serialize
+        var jsonText = Json { prettyPrint = true }.encodeToString(cardSetJson)
+
+        // Make File
+        val file = root.createFile("application/json", fileName) ?: return@withContext false
+        context.contentResolver.openOutputStream(file.uri)?.use { out ->
+            out.write(jsonText.toByteArray())
+        } ?: return@withContext false
+
+        true
     }
 
     /** Converts an array of [DocumentFile]s to a list of [JsonEntry]s. */
@@ -153,6 +182,10 @@ class DataManagerModel @Inject constructor(
     /** Create a new folder under the user root. */
     suspend fun createFolder(name: String): Boolean =
         dataManager.createFolder(name)
+
+    /** Create a new card set under the user root. */
+    suspend fun createCardSet(cardSetJson: CardSetJson): Boolean =
+        dataManager.createCardSet(cardSetJson)
 
     suspend fun reloadFolders() =
         _isFoldersRefreshing.refresh { _folders.emit(dataManager.allSubFolder.first()) }

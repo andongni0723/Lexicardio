@@ -2,42 +2,36 @@ package com.andongni.vcblearn.ui.component
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
+import com.andongni.vcblearn.data.CardDetail
+import com.andongni.vcblearn.data.CardSetJson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
-
-data class CardSetUiState(
-    val title: String = "",
-    val cards: List<Card> = emptyList()
-)
-
-data class Card(val id: String, val front: String = "", val back: String = "")
 
 @HiltViewModel
 open class CardSetEditorViewModel @Inject constructor() : ViewModel() {
-    private val _uiState = mutableStateOf(CardSetUiState())
-    val uiState: State<CardSetUiState> = _uiState
+    private val _uiState = mutableStateOf(CardSetJson())
+    val uiState: State<CardSetJson> = _uiState
 
-    fun addCard(card: Card) {
-        _uiState.value = _uiState.value.copy(cards = _uiState.value.cards + card)
+    private val _cards = MutableStateFlow<List<CardDetail>>(emptyList())
+    val cards = _cards.asStateFlow()
+
+    fun addCard() {
+        _cards.update { it + CardDetail() }
     }
 
-    fun removeCard(card: Card) {
-        _uiState.value = _uiState.value.copy(cards = _uiState.value.cards - card)
+    fun removeCard(id: String) {
+        _cards.update { it.filterNot { it.id == id } }
     }
 
-    fun updateTitle(title: String) {
-        _uiState.value = _uiState.value.copy(title = title)
-    }
-
-    fun save() {
-        // TODO: Save card set to database
-    }
-
-    fun load(id: String) {
-        // TODO: Load card set from database
-    }
-
-    fun delete() {
-        // TODO: Delete card set from database
+    fun updateCard(id: String, newCard: CardDetail) {
+        _cards.update { list ->
+            list.map { card ->
+                if (card.id == id) newCard else card
+            }
+        }
     }
 }
