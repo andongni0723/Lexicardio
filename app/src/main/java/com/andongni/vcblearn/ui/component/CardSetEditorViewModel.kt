@@ -16,7 +16,7 @@ open class CardSetEditorViewModel @Inject constructor() : ViewModel() {
     private val _uiState = mutableStateOf(CardSetJson())
     val uiState: State<CardSetJson> = _uiState
 
-    private val _cards = MutableStateFlow<List<CardDetail>>(emptyList())
+    private val _cards = MutableStateFlow<List<CardDetail>>(listOf(CardDetail(), CardDetail()))
     val cards = _cards.asStateFlow()
 
     fun addCard() {
