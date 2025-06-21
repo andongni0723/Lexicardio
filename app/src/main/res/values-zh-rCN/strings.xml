@@ -37,7 +37,8 @@
     <string name="import_csv_data">导入 CSV</string>
     <string name="card_set">卡组</string>
     <string name="recent">最近</string>
-    <string name="tag">标记</string>
+    <string name="tag">標籤</string>
     <string name="folder">文件夹</string>
     <string name="confirm">确认</string>
+    <string name="space">空白鍵</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.andongni.vcblearn.ui.component
 
+import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import com.andongni.vcblearn.data.CardDetail
@@ -10,12 +11,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+import kotlin.collections.get
 
 @HiltViewModel
 open class CardSetEditorViewModel @Inject constructor() : ViewModel() {
-    private val _uiState = mutableStateOf(CardSetJson())
-    val uiState: State<CardSetJson> = _uiState
-
     private val _cards = MutableStateFlow<List<CardDetail>>(listOf(CardDetail(), CardDetail()))
     val cards = _cards.asStateFlow()
 
@@ -33,5 +32,41 @@ open class CardSetEditorViewModel @Inject constructor() : ViewModel() {
                 if (card.id == id) newCard else card
             }
         }
+    }
+
+    fun addCards(newCards: List<CardDetail>) {
+        _cards.update { it + newCards }
+    }
+
+    fun csvConvertCardList(
+        csvData: String,
+        delimiter: String = " ",
+        lineBreak: String = "\n"
+    ): List<CardDetail> {
+        val lineRegex = Regex(Regex.escape(lineBreak))
+        return csvData
+            .split(lineRegex)
+            .asSequence()
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .mapNotNull { line ->
+                val cols = line.split(delimiter)
+
+                when(cols.size) {
+                    0 -> null
+                    1 -> CardDetail(word =  cols[0], definition =  "")
+                    else -> {
+                        val word = cols[0].trim()
+                        val definition = cols.drop(1).joinToString(delimiter).trim()
+
+                        if (word.isEmpty())
+                            null
+                        else
+                            CardDetail(word = word, definition = definition)
+                    }
+                }
+            }
+            .toList()
+            .also { Log.d("csvConvertCardList", it.toString()) }
     }
 }

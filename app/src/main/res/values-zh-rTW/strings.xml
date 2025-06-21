@@ -37,7 +37,8 @@
     <string name="choose_answer">選擇答案</string>
     <string name="card_set">卡组</string>
     <string name="recent">最近</string>
-    <string name="tag">標籤</string>
+    <string name="tag">标记</string>
     <string name="folder">資料夾</string>
     <string name="confirm">確認</string>
+    <string name="space">空格</string>
 </resources>

@@ -188,11 +188,6 @@ private fun CardEditItem(
         label = "animation alpha",
         animationSpec = tween(300))
 
-//    LaunchedEffect(dismissState.progress) {
-//        Log.d("CardEditItem", "progress: ${dismissState.progress} ${dismissState.currentValue}
-//        ${dismissState.targetValue} ${dismissState.dismissDirection}")
-//    }
-
     LaunchedEffect(dismissState.currentValue) {
         if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) isCollapsed = true
     }
@@ -234,7 +229,7 @@ private fun CardEditItem(
                 }
             }
         ) {
-            CardEdit(card, onCardChange)
+            CardEdit(card, true, onCardChange)
         }
     }
 }
@@ -270,8 +265,9 @@ private fun SwipeBoxBackground(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CardEdit(
+fun CardEdit(
     card: CardDetail,
+    inputEnable: Boolean = true,
     onCardChange: (CardDetail) -> Unit = {},
 ) {
     var word       by remember(card) { mutableStateOf(card.word) }
@@ -285,7 +281,6 @@ private fun CardEdit(
         modifier = Modifier.fillMaxWidth(),
         shape = ShapeDefaults.Medium,
         colors = cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-//        colors = cardColors(containerColor = Color.Transparent)
     ) {
         Column(
             Modifier
@@ -300,6 +295,7 @@ private fun CardEdit(
 
             TextField(
                 value = word,
+                readOnly = !inputEnable,
                 onValueChange = { word = it},
                 label = { Text(stringResource(R.string.word), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -308,6 +304,7 @@ private fun CardEdit(
             )
             TextField(
                 value = definition,
+                readOnly = !inputEnable,
                 onValueChange = { definition = it},
                 label = { Text(stringResource(R.string.definition), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)) },
                 modifier = Modifier.fillMaxWidth(),

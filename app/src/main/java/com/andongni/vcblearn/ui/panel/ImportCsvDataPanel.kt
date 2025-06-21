@@ -1,13 +1,15 @@
 package com.andongni.vcblearn.ui.panel
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -16,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
+import com.andongni.vcblearn.data.CardDetail
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
@@ -43,10 +46,32 @@ fun ImportCsvDataPanel(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var inputData by remember { mutableStateOf("") }
 
-    var delimiter by remember { mutableStateOf("tab") }
+    var delimiter by remember { mutableStateOf("space") }
     var customDelimiter by remember { mutableStateOf("") }
     var lineBreak by remember { mutableStateOf("new_line") }
     var customLineBreak by remember { mutableStateOf("") }
+    var previewCardList by remember { mutableStateOf(listOf<CardDetail>()) }
+    var examplePlaceholder by remember { mutableStateOf("W1 D1\nW2 D2") }
+
+    LaunchedEffect(delimiter, customDelimiter, lineBreak, customLineBreak, inputData) {
+        val delimiterChar = when (delimiter) {
+            "space" -> " "
+            "comma" -> ","
+            else -> decodeEscapes(customDelimiter)
+        }
+
+        val lineBreakChar = when (lineBreak) {
+            "new_line" -> "\n"
+            "semicolon" -> ";"
+            else -> decodeEscapes(customLineBreak)
+        }
+
+        Log.d("ImportCsvDataPanel", "delimiter: $delimiterChar, lineBreak: ${decodeEscapes(lineBreakChar)}")
+        examplePlaceholder = "W1${delimiterChar}D1${lineBreakChar}W2${delimiterChar}D2"
+        previewCardList = viewModel.csvConvertCardList(inputData, delimiterChar, lineBreakChar)
+    }
+
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -62,7 +87,10 @@ fun ImportCsvDataPanel(
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Filled.Settings, contentDescription = "Settings")
                     }
-                    IconButton(onClick = { /*viewModel.save();*/ navController.popBackStack() }) {
+                    IconButton(onClick = {
+                        viewModel.addCards(previewCardList)
+                        navController.popBackStack()
+                    }) {
                         Icon(Icons.Filled.Check, contentDescription = "Create")
                     }
                 },
@@ -75,15 +103,15 @@ fun ImportCsvDataPanel(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner),
-            verticalArrangement = Arrangement.spacedBy(40.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         ) {
             item {
                 OutlinedTextField(
                     value = inputData,
-                    onValueChange = { inputData = it },
+                    onValueChange = { inputData = it; },
                     placeholder = {
-                        Text("W1\tD1\nW2\tD2", color =
+                        Text(examplePlaceholder, color =
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
                     },
                     modifier = Modifier.fillMaxWidth().height(200.dp),
@@ -95,9 +123,9 @@ fun ImportCsvDataPanel(
                     Text(stringResource(R.string.delimiter), style = MaterialTheme.typography.titleMedium)
 
                     OptionRow(
-                        label = stringResource(R.string.tab),
-                        selected = delimiter == "tab",
-                        onClick = { delimiter = "tab" },
+                        label = stringResource(R.string.space),
+                        selected = delimiter == "space",
+                        onClick = { delimiter = "space" },
                     )
 
                     OptionRow(
@@ -119,6 +147,8 @@ fun ImportCsvDataPanel(
                             singleLine = true
                         )
                     }
+
+                    Spacer(Modifier.height(16.dp))
                 }
             }
 
@@ -145,18 +175,20 @@ fun ImportCsvDataPanel(
                         TextField(
                             value = customLineBreak,
                             label = { Text(stringResource(R.string.custom)) },
-                            onValueChange = { customLineBreak = it },
+                            onValueChange = { customLineBreak = it; },
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("/n") },
+                            placeholder = { Text("\\n\\n") },
                             singleLine = true
                         )
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
             }
 
-//            items(10) {
-//                CardEdit()
-//            }
+            items(previewCardList) { card ->
+                CardEdit(card, false)
+            }
         }
     }
 }
@@ -169,9 +201,7 @@ private fun OptionRow(
     extraContent: @Composable () -> Unit? = {}
 ) {
     Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        Modifier.fillMaxWidth().padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
@@ -182,11 +212,13 @@ private fun OptionRow(
 
         Spacer(Modifier.width(16.dp))
 
-
-        if (!label.isEmpty()) {
-            Text(label)
-        } else {
-            extraContent()
-        }
+        if (!label.isEmpty()) Text(label)
+        else extraContent()
     }
 }
+
+private fun decodeEscapes(src: String): String =
+    src .replace("\\\\", "\\")
+        .replace("\\n",  "\n")
+        .replace("\\r",  "\r")
+        .replace("\\t",  "\t")

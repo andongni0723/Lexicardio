@@ -25,16 +25,13 @@ val appLanguages = listOf(
 
 @Singleton
 class AppLocaleManager {
-
     fun changeLanguage(context: Activity, code: String) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.getSystemService(LocaleManager::class.java).applicationLocales =
                 LocaleList.forLanguageTags(code)
         } else {
-//            context.resources.configuration.setLocale(LocaleList.forLanguageTags(code)[0])
             context.resources.configuration.setLocales(LocaleList.forLanguageTags(code))
             Log.d("LocaleManager", "S: " + context.resources.configuration.locales.get(0))
-//            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(code))
             context.recreate()
         }
     }
@@ -53,5 +50,4 @@ class AppLocaleManager {
     private fun getDefaultLanguageCode(): String {
         return appLanguages.first().code
     }
-
 }
