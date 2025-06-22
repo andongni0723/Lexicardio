@@ -88,7 +88,11 @@ fun ImportCsvDataPanel(
                         Icon(Icons.Filled.Settings, contentDescription = "Settings")
                     }
                     IconButton(onClick = {
-                        viewModel.addCards(previewCardList)
+                        // Save to view model
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("importCards", previewCardList)
+
                         navController.popBackStack()
                     }) {
                         Icon(Icons.Filled.Check, contentDescription = "Create")

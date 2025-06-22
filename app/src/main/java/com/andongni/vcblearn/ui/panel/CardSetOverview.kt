@@ -69,6 +69,7 @@ fun CardSetOverviewPanel(
                 scrollBehavior = scrollBehavior
             )
         },
+        containerColor = MaterialTheme.colorScheme.surface,
     ) { inner ->
 
         LazyColumn(
@@ -106,7 +107,10 @@ fun CardSetOverviewPanel(
                     onClick = { navController.navigate(NavRoute.LearnMode.route) },
                     Modifier.fillMaxWidth().height(60.dp),
                     shape = RoundedCornerShape(10.dp),
-                    colors = buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+                    colors = buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
                 ) {
                     Row(
                         Modifier.fillMaxWidth(),
@@ -129,7 +133,10 @@ fun CardSetOverviewPanel(
                     onClick = {},
                     Modifier.fillMaxWidth().height(60.dp),
                     shape = RoundedCornerShape(10.dp),
-                    colors = buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+                    colors = buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
                 ) {
                     Row(
                         Modifier.fillMaxWidth(),
@@ -183,8 +190,8 @@ fun WordCarousel(
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
             shape = RoundedCornerShape(20.dp),
             colors = buttonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -205,7 +212,10 @@ fun WordCarousel(
 fun WordCard(card: CardDetail) {
     Card(
         modifier = Modifier.fillMaxWidth().height(100.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
     ) {
         Row(
             modifier = Modifier.fillMaxSize().padding(20.dp),

@@ -57,8 +57,8 @@ open class SettingPanelViewModel @Inject constructor(
 
     val languageOptions = appLanguages.map { it.displayName }
     val languageCodes = appLanguages.map { it.code }
-    val themeOptions = listOf("Dark", "Material You")
-    val themeCodes = listOf("dark", "dynamic")
+    val themeOptions = listOf("System", "Dark", "Light", "Material You")
+    val themeCodes = listOf("system", "dark", "light", "dynamic")
 
     val fields: StateFlow<List<SettingFieldData>> =
         combine(

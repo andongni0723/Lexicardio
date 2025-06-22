@@ -48,6 +48,8 @@ class DataManager @Inject constructor(
     private val settingRepo: SettingsRepository,
     @ApplicationContext private val context: Context,
 ) {
+    val userFolder: Flow<String?> = settingRepo.userFolder
+
     private val userRoot: Flow<DocumentFile?> = settingRepo.userFolder
         .map { path ->
             runCatching { DocumentFile.fromTreeUri(context, path.toUri()) }.getOrNull()
@@ -149,6 +151,10 @@ class DataManager @Inject constructor(
 class DataManagerModel @Inject constructor(
     private val dataManager: DataManager,
 ) : ViewModel() {
+
+    val userFolder: StateFlow<String?> =
+        dataManager.userFolder
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val _folders = MutableStateFlow<List<FolderEntry>>(emptyList())
     val folders: StateFlow<List<FolderEntry>> = _folders

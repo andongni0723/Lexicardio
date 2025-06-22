@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.*
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.*
 import androidx.compose.material.icons.Icons
@@ -16,9 +17,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.LexicardioNavGraph
@@ -28,6 +31,12 @@ import dagger.hilt.*
 import dagger.hilt.android.*
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.launch
+import android.content.Intent
+import android.graphics.Color
+import android.provider.DocumentsContract
+import android.util.Log
+import androidx.compose.ui.Modifier
+import androidx.core.net.toUri
 
 
 @AndroidEntryPoint
@@ -45,7 +54,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeMode by repo.theme.collectAsState("dark")
             val dynamic = themeMode == "dynamic"
-            LexicardioTheme(dynamic) {
+            LexicardioTheme(themeMode) {
                 LexicardioNavGraph()
             }
         }
@@ -72,10 +81,17 @@ fun MyApp(navController: NavController) {
     // Footer Nav Bar and Event Bottom Sheet
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackBarHostState) },
+        snackbarHost = {
+            SnackbarHost(snackBarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.error,
+                )
+            }
+        },
         bottomBar = {
             BottomAppBar {
-
                 val haptic = LocalHapticFeedback.current
 
                 // Home
@@ -154,9 +170,7 @@ fun Home(navController: NavController) {
 
                 // Today Learn
                 Text(stringResource(R.string.today_learn),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground)
-
+                    style = MaterialTheme.typography.headlineMedium)
 
                 LinearProgressIndicator(
                     progress = { 0.8f },
@@ -212,7 +226,6 @@ fun Home(navController: NavController) {
                     Modifier.padding(top = 50.dp),
                     style = MaterialTheme.typography.headlineMedium
                 )
-
                 Column(
                     Modifier
                         .fillMaxWidth()
@@ -224,11 +237,14 @@ fun Home(navController: NavController) {
                         modifier = Modifier
                             .size(200.dp, 100.dp)
                             .graphicsLayer(rotationZ = -5f),
-                        shape = IconButtonDefaults.filledShape
+                        shape = IconButtonDefaults.filledShape,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary,
+                        )
                     ) {
                         Text("342", style = MaterialTheme.typography.displayMedium)
                     }
-
 
                     FilledIconButton(
                         onClick = {},
@@ -251,15 +267,49 @@ fun Home(navController: NavController) {
     }
 }
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Library(navController: NavController) {
+fun Library(
+    navController: NavController,
+    viewModel: DataManagerModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val folderUri by viewModel.userFolder.collectAsState(null)
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
     ) {
-        Text(stringResource(R.string.library), style = MaterialTheme.typography.headlineMedium)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(stringResource(R.string.library), style = MaterialTheme.typography.headlineMedium)
+
+            IconButton(
+                onClick = {
+                    folderUri?.let { tree ->
+                        val docUri = DocumentsContract.buildDocumentUriUsingTree(
+                            tree.toUri(),
+                            DocumentsContract.getTreeDocumentId(tree.toUri())
+                        )
+
+                        // Open File App to user data folder
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(docUri, DocumentsContract.Document.MIME_TYPE_DIR)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            putExtra(DocumentsContract.EXTRA_INITIAL_URI, docUri)
+                        }
+                        runCatching { context.startActivity(intent) }
+                            .onFailure { return@IconButton }
+                    }
+                }
+            ) {
+                Icon(Icons.Filled.Folder, "User Data Folder")
+            }
+        }
         LibraryTab(navController)
     }
 }

@@ -19,7 +19,7 @@ object UserPrefsDataStore {
         context.dataStore.data.map { it[USER_FOLDER] ?: "No Data" }
 
     fun themeFlow(context: Context): Flow<String> =
-        context.dataStore.data.map { it[THEME] ?: "dark" }
+        context.dataStore.data.map { it[THEME] ?: "system" }
 
     fun languageFlow(context: Context): Flow<String> =
         context.dataStore.data.map { it[LANGUAGE] ?: appLocaleManager.getLanguageCode(context) }

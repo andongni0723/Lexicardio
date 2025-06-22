@@ -138,8 +138,12 @@ fun CardSet(
                 .fillMaxSize()
                 .padding(15.dp),
         ) {
-            Text(cardSetData.name, style = MaterialTheme.typography.titleMedium)
-            Text("Description", style = MaterialTheme.typography.bodySmall)
+            Text(cardSetData.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground)
+            Text("Description",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground)
             Spacer(Modifier.size(30.dp))
         }
     }
@@ -169,7 +173,9 @@ fun FolderButton(
                 .fillMaxSize()
                 .padding(15.dp),
         ) {
-            Text(folderData.name, style = MaterialTheme.typography.titleMedium)
+            Text(folderData.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground)
             Spacer(Modifier.size(30.dp))
         }
     }

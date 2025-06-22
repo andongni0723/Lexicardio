@@ -67,6 +67,22 @@ fun CreateCardSetScreen(
     val cards by viewModel.cards.collectAsState()
     var setName by rememberSaveable { mutableStateOf("") }
 
+    val importedCards =
+        navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.getStateFlow<List<CardDetail>?>("importCards", null)
+            ?.collectAsState(null)
+
+    LaunchedEffect(importedCards?.value) {
+        importedCards?.value?.let { list ->
+            if (list.isNotEmpty()) {
+                viewModel.addCards(list)
+                navController.currentBackStackEntry
+                    ?.savedStateHandle?.remove<List<CardDetail>>("importCards")
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {

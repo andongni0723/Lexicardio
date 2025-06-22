@@ -46,13 +46,13 @@ fun TransparentButton(icon: ImageVector, text: String, onClick: () -> Unit) {
             .background(Color.Transparent),
         colors = ButtonColors(
             Color.Transparent,
-            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.onPrimary,
             Color.Transparent,
             Color.Transparent),
         onClick = onClick
     ) {
         Row (modifier = Modifier.fillMaxWidth().align(Alignment.CenterVertically)) {
-            Icon(icon, contentDescription = text)
+            Icon(icon, contentDescription = text, tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(16.dp))
             Text(text, style = MaterialTheme.typography.titleMedium)
         }

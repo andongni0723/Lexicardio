@@ -3,9 +3,7 @@ package com.andongni.vcblearn.ui.theme
 import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -13,9 +11,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.max
-import dagger.hilt.android.EntryPointAccessors
 
 private val DarkColorScheme = darkColorScheme(
     /* ===== 1. 主要背景 ===== */
@@ -23,8 +18,8 @@ private val DarkColorScheme = darkColorScheme(
     onBackground     = Color(0xFFE6E6E6),   // #E6E6E6
 
     /* ===== 2. 文字／圖示 ===== */
-    surface          = Color(0xFF0F0F0F),   // Nav Bar、Dialog 用
-    onSurface        = Color(0xFFE6E6E6),
+    surface          = Color(0xFF14161D),   // Nav Bar、Dialog 用
+    onSurface        = Color(0xFFE1E1E1),
 
     /* ===== 3. 欄位底色（TextField 等）===== */
     surfaceVariant       = Color(0xFF2B2E3A),   // #2B2E3A
@@ -45,8 +40,10 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    background = Color(0xFFE6E6E6),
+    background = Color(0xFFFFFFFF),
     onBackground = Color(0xFF14161D),
+    surface =  Color(0xFFF7F7FF),
+    surfaceVariant = Color(0xFFFFFFFF),
     onSurface = Color(0xFF14161D),
     primary = Color(0xFF8080FF),
     onPrimary = Color(0xFF14161D),
@@ -55,20 +52,25 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun LexicardioTheme(
-    dynamicColor: Boolean = false,
+    themeCode: String = "system",
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        themeCode == "dynamic" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
+            Log.d("LexicardioTheme", "True")
             if (isSystemInDarkTheme()) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        else -> DarkColorScheme
+        themeCode == "light" -> LightColorScheme
+        themeCode == "dark" -> DarkColorScheme
+        else -> if (isSystemInDarkTheme()) DarkColorScheme else LightColorScheme
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+        typography = AppTypography,
+    ) {
+
+        content()
+    }
 }
