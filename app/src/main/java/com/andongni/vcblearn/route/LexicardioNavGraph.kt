@@ -25,6 +25,7 @@ import com.andongni.vcblearn.ui.panel.FolderPanel
 import com.andongni.vcblearn.ui.panel.ImportCsvDataPanel
 import com.andongni.vcblearn.ui.panel.LearnModePanel
 import com.andongni.vcblearn.ui.panel.setting.SettingPanel
+import com.andongni.vcblearn.ui.panel.study.TestModeStartSetting
 import java.net.URLEncoder
 
 sealed class NavRoute(val route: String) {
@@ -43,6 +44,8 @@ sealed class NavRoute(val route: String) {
         const val base64EncodeUriArg = "uri"
     }
     data object LearnMode : NavRoute("learn_mode")
+    data object TestModeStartSetting : NavRoute("test_model_start_setting")
+    data object TestMode  : NavRoute("test_mode")
 }
 
 fun Uri.encodeBase64Uri(): String =
@@ -107,7 +110,15 @@ fun LexicardioNavGraph() {
         }
 
         composable(NavRoute.LearnMode.route) {
-             LearnModePanel(navController)
+            LearnModePanel(navController)
+        }
+
+        composable(NavRoute.TestModeStartSetting.route) {
+            TestModeStartSetting(navController)
+        }
+
+        composable(NavRoute.TestMode.route) {
+            LearnModePanel(navController)
         }
 
         composable(

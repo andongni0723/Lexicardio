@@ -130,7 +130,7 @@ fun CardSetOverviewPanel(
 
             item {
                 Button(
-                    onClick = {},
+                    onClick = { navController.navigate(NavRoute.TestModeStartSetting.route) },
                     Modifier.fillMaxWidth().height(60.dp),
                     shape = RoundedCornerShape(10.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),

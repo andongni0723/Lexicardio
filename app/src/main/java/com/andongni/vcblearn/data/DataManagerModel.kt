@@ -148,7 +148,7 @@ class DataManager @Inject constructor(
 }
 
 @HiltViewModel
-class DataManagerModel @Inject constructor(
+open class DataManagerModel @Inject constructor(
     private val dataManager: DataManager,
 ) : ViewModel() {
 

@@ -1,10 +1,11 @@
 package com.andongni.vcblearn
 
+import android.content.Intent
 import android.os.Bundle
+import android.provider.DocumentsContract
 import androidx.activity.*
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.*
 import androidx.compose.material.icons.Icons
@@ -17,10 +18,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andongni.vcblearn.data.*
@@ -31,12 +32,6 @@ import dagger.hilt.*
 import dagger.hilt.android.*
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.launch
-import android.content.Intent
-import android.graphics.Color
-import android.provider.DocumentsContract
-import android.util.Log
-import androidx.compose.ui.Modifier
-import androidx.core.net.toUri
 
 
 @AndroidEntryPoint

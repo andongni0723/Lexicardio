@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.andongni.vcblearn.data.TestModeModel
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
 import com.andongni.vcblearn.ui.theme.*
 
@@ -28,11 +29,10 @@ import com.andongni.vcblearn.ui.theme.*
 fun LearnModePanelPreview() {
     LexicardioTheme {
         val navController = rememberNavController()
-        val fakeVm = remember { FakeLearnModePanelViewModel() }
-        LearnModePanel(navController, fakeVm)
+        LearnModePanel(navController, )
     }
 }
-class FakeLearnModePanelViewModel : CardSetEditorViewModel()
+//class FakeLearnModePanelViewModel : TestModeModel()
 //endregion
 
 
@@ -40,7 +40,7 @@ class FakeLearnModePanelViewModel : CardSetEditorViewModel()
 @Composable
 fun LearnModePanel(
     navController: NavController,
-    viewModel: CardSetEditorViewModel = hiltViewModel()
+//    viewModel: TestModeModel = hiltViewModel()
 ) {
     var answerMode by remember { mutableIntStateOf(0) }
 
