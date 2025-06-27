@@ -48,4 +48,8 @@
     <string name="written">Written</string>
     <string name="show_answer_immd">Show Answer Immediately</string>
     <string name="start_test">Start Test</string>
+    <string name="question_count">Questions</string>
+    <string name="answer_type">Answer Type</string>
+    <string name="true_word">True</string>
+    <string name="false_word">False</string>
 </resources>

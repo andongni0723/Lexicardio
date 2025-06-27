@@ -47,4 +47,8 @@
     <string name="written">填空題</string>
     <string name="show_answer_immd">立即顯示答案</string>
     <string name="start_test">開始測驗</string>
+    <string name="question_count">題數</string>
+    <string name="answer_type">回答類型</string>
+    <string name="true_word">是</string>
+    <string name="false_word">否</string>
 </resources>

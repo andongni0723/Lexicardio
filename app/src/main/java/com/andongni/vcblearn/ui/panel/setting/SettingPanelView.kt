@@ -44,17 +44,6 @@ fun SettingPanelPreview() {
 //class FakeSettingPanelViewModel : SettingPanelViewModel()
 //endregion
 
-fun Context.getActivityOrNull(): Activity? {
-    var context = this
-    if (context is Activity) return context
-    while (context is ContextWrapper) {
-        if (context is Activity) return context
-        context = context.baseContext
-    }
-
-    return null
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingPanel(
@@ -164,7 +153,7 @@ fun SettingPanel(
 }
 
 @Composable
-fun SettingListItem(
+private fun SettingListItem(
     headline: String,
     supporting: String = "",
     icon: ImageVector,
@@ -198,7 +187,7 @@ fun SettingListItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingFieldDialog(
+private fun SettingFieldDialog(
     onDismissRequest: () -> Unit,
     title: String,
     fields: List<String>,

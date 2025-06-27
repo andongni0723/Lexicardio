@@ -2,6 +2,7 @@ package com.andongni.vcblearn.data
 
 import android.content.Context
 import android.net.Uri
+import android.os.Parcelable
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -10,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import java.util.UUID
@@ -25,6 +27,7 @@ data class JsonEntry(
     val uri: Uri = "".toUri()
 )
 
+@Parcelize
 @Serializable
 data class CardDetail(
     @SerialName("id")
@@ -33,15 +36,16 @@ data class CardDetail(
     val word: String = "",
     @SerialName("definition")
     val definition: String = "",
-)
+) : Parcelable
 
+@Parcelize
 @Serializable
 data class CardSetJson(
     @SerialName("card_set_name")
     val name: String = "(Unnamed)",
     @SerialName("words")
     val cards: List<CardDetail> = emptyList()
-)
+) : Parcelable
 
 @Singleton
 class DataManager @Inject constructor(

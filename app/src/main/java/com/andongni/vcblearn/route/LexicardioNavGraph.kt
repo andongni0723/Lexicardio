@@ -9,6 +9,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.navigation.NavType
@@ -17,8 +18,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.andongni.vcblearn.MyApp
+import com.andongni.vcblearn.data.CardSetJson
 import com.andongni.vcblearn.data.FolderEntry
 import com.andongni.vcblearn.data.JsonEntry
+import com.andongni.vcblearn.data.TestModelSettingDetail
 import com.andongni.vcblearn.ui.panel.CardSetOverviewPanel
 import com.andongni.vcblearn.ui.panel.CreateCardSetScreen
 import com.andongni.vcblearn.ui.panel.FolderPanel
@@ -110,15 +113,33 @@ fun LexicardioNavGraph() {
         }
 
         composable(NavRoute.LearnMode.route) {
-            LearnModePanel(navController)
+            LearnModePanel(navController, TestModelSettingDetail(CardSetJson()))
         }
 
         composable(NavRoute.TestModeStartSetting.route) {
-            TestModeStartSetting(navController)
+            val parentEntry = remember(it) {
+                navController.previousBackStackEntry
+            }
+
+            val cardSetData = parentEntry
+                ?.savedStateHandle
+                ?.get<CardSetJson>("cardSetDetail")
+                ?: CardSetJson()
+
+            TestModeStartSetting(navController, cardSetData)
         }
 
         composable(NavRoute.TestMode.route) {
-            LearnModePanel(navController)
+            val parentEntry = remember(it) {
+                navController.previousBackStackEntry
+            }
+
+            val testSetting = parentEntry
+                ?.savedStateHandle
+                ?.get<TestModelSettingDetail>("testSetting")
+                ?: TestModelSettingDetail(CardSetJson())
+
+            LearnModePanel(navController, testSetting)
         }
 
         composable(

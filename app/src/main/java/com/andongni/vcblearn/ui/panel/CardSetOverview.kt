@@ -62,7 +62,7 @@ fun CardSetOverviewPanel(
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Filled.Folder, contentDescription = "Folder")
                     }
-                    IconButton(onClick = { /*viewModel.save();*/ navController.popBackStack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.MoreHoriz, contentDescription = "More")
                     }
                 },
@@ -130,7 +130,14 @@ fun CardSetOverviewPanel(
 
             item {
                 Button(
-                    onClick = { navController.navigate(NavRoute.TestModeStartSetting.route) },
+                    onClick = {
+                        // Save data
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("cardSetDetail", cardSetDetail)
+
+                        navController.navigate(NavRoute.TestModeStartSetting.route)
+                    },
                     Modifier.fillMaxWidth().height(60.dp),
                     shape = RoundedCornerShape(10.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
