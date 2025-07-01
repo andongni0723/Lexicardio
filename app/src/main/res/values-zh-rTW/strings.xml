@@ -51,4 +51,7 @@
     <string name="answer_type">回答類型</string>
     <string name="true_word">是</string>
     <string name="false_word">否</string>
+    <string name="result">結果</string>
+    <string name="detailed_information">詳細資訊</string>
+    <string name="your_answers">你的答案</string>
 </resources>

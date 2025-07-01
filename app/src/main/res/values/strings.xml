@@ -52,4 +52,7 @@
     <string name="answer_type">Answer Type</string>
     <string name="true_word">True</string>
     <string name="false_word">False</string>
+    <string name="result">Result</string>
+    <string name="detailed_information">Detailed Information</string>
+    <string name="your_answers">Your Answers</string>
 </resources>

@@ -21,6 +21,8 @@ import com.andongni.vcblearn.MyApp
 import com.andongni.vcblearn.data.CardSetJson
 import com.andongni.vcblearn.data.FolderEntry
 import com.andongni.vcblearn.data.JsonEntry
+import com.andongni.vcblearn.data.QuestionData
+import com.andongni.vcblearn.data.QuestionUiState
 import com.andongni.vcblearn.data.TestModelSettingDetail
 import com.andongni.vcblearn.ui.panel.CardSetOverviewPanel
 import com.andongni.vcblearn.ui.panel.CreateCardSetScreen
@@ -29,6 +31,7 @@ import com.andongni.vcblearn.ui.panel.ImportCsvDataPanel
 import com.andongni.vcblearn.ui.panel.LearnModePanel
 import com.andongni.vcblearn.ui.panel.setting.SettingPanel
 import com.andongni.vcblearn.ui.panel.study.TestModeStartSetting
+import com.andongni.vcblearn.ui.panel.study.TestResultPanel
 import java.net.URLEncoder
 
 sealed class NavRoute(val route: String) {
@@ -49,6 +52,7 @@ sealed class NavRoute(val route: String) {
     data object LearnMode : NavRoute("learn_mode")
     data object TestModeStartSetting : NavRoute("test_model_start_setting")
     data object TestMode  : NavRoute("test_mode")
+    data object TestModeResult : NavRoute("test_mode_result")
 }
 
 fun Uri.encodeBase64Uri(): String =
@@ -140,6 +144,19 @@ fun LexicardioNavGraph() {
                 ?: TestModelSettingDetail(CardSetJson())
 
             LearnModePanel(navController, testSetting)
+        }
+
+        composable(NavRoute.TestModeResult.route) {
+            val parentEntry = remember(it) {
+                navController.previousBackStackEntry
+            }
+
+            val answerData = parentEntry
+                ?.savedStateHandle
+                ?.get<ArrayList<QuestionUiState>>("answerData")
+                ?: listOf(QuestionUiState.TrueFalse(QuestionData.TrueFalse("", "", true), true))
+
+            TestResultPanel(navController, answerData)
         }
 
         composable(

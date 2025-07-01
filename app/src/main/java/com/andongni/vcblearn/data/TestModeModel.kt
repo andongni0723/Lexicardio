@@ -26,9 +26,10 @@ enum class OptionUiState {
     Wrong
 }
 
+@Parcelize
 sealed class QuestionData (
     open val title: String
-) {
+): Parcelable {
     data class TrueFalse(
         override val title: String,
         val shownText: String,
@@ -53,10 +54,10 @@ fun QuestionData.toUiState(): QuestionUiState = when (this) {
     is QuestionData.Written       -> QuestionUiState.Written(this)
 }
 
-
+@Parcelize
 sealed class QuestionUiState(
     open val data : QuestionData
-) {
+): Parcelable {
     data class TrueFalse(
         override val data: QuestionData.TrueFalse,
         val userAnswer: Boolean? = null

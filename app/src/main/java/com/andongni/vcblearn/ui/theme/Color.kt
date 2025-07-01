@@ -12,5 +12,4 @@ val Pink40 = Color(0xFF7D5260)
 
 val Red500 = Color(0xFFF44336)
 
-val ColorError = Color(0xFFBA1A1A)
-val ColorCorrect = Color(0xFF006E50)
+val LightErrorColor = Color(0xFFFF6E4E)

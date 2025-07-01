@@ -12,6 +12,10 @@ val MyFont = FontFamily(
     Font(R.font.poppins_semibold, FontWeight.SemiBold),
 )
 
+val Impact = FontFamily(
+    Font(R.font.impact, FontWeight.Normal),
+)
+
 val AppTypography = Typography().withFont(MyFont)
 
 fun Typography.withFont(fontFamily: FontFamily) = Typography(
