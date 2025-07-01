@@ -20,19 +20,25 @@ enum class QuestionType {
     Written,
 }
 
+enum class OptionUiState {
+    None,
+    Correct,
+    Wrong
+}
+
 sealed class QuestionData (
     open val title: String
 ) {
     data class TrueFalse(
         override val title: String,
-        val title2: String,
-        val correct: Boolean? = null,
+        val shownText: String,
+        val correct: Boolean,
     ) : QuestionData(title)
 
     data class MultipleChoice(
         override val title: String,
         val options: List<String>,
-        val correctIndex: Int? = null,
+        val correctIndex: Int,
     ) : QuestionData(title)
 
     data class Written(
@@ -41,6 +47,13 @@ sealed class QuestionData (
     ) : QuestionData(title)
 }
 
+fun QuestionData.toUiState(): QuestionUiState = when (this) {
+    is QuestionData.TrueFalse     -> QuestionUiState.TrueFalse(this)
+    is QuestionData.MultipleChoice-> QuestionUiState.MultipleChoice(this)
+    is QuestionData.Written       -> QuestionUiState.Written(this)
+}
+
+
 sealed class QuestionUiState(
     open val data : QuestionData
 ) {
@@ -48,14 +61,14 @@ sealed class QuestionUiState(
         override val data: QuestionData.TrueFalse,
         val userAnswer: Boolean? = null
     ) : QuestionUiState(data) {
-        val isCorrect get() = userAnswer == data.correct && userAnswer != null
+        val isCorrect get() = userAnswer == data.correct
     }
 
     data class MultipleChoice(
         override val data: QuestionData.MultipleChoice,
         val selectedIndex: Int? = null
     ) : QuestionUiState(data) {
-        val isCorrect get() = selectedIndex == data.correctIndex && selectedIndex != null
+        val isCorrect get() = selectedIndex == data.correctIndex
     }
 
     data class Written(
@@ -78,18 +91,10 @@ data class TestModelSettingDetail(
     var writtenMode: Boolean = true,
 ) : Parcelable
 
-data class QuestionDetail(
-    val type: QuestionType,
-    val question: String,
-    val answer: String,
-    val options: List<String> = listOf(),
-)
-
 @HiltViewModel
 open class TestModeModel @Inject constructor(
     private val dataManager: DataManager,
 ) : ViewModel() {
-    val setting: TestModelSettingDetail = TestModelSettingDetail(CardSetJson())
 
     fun makeTestQuestionList(data: TestModelSettingDetail) : List<QuestionData> {
         val cards = data.cardSetJson.cards.shuffled()
