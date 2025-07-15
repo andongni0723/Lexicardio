@@ -33,7 +33,6 @@ import dagger.hilt.android.*
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.launch
 
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 

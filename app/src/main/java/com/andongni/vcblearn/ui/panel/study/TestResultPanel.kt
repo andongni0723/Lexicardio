@@ -1,17 +1,19 @@
 package com.andongni.vcblearn.ui.panel.study
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
@@ -19,14 +21,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.ui.theme.*
-import androidx.compose.foundation.lazy.*
-import androidx.compose.ui.Alignment
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,8 +38,8 @@ fun TestResultPanelPreview() {
         TestResultPanel(
             navController = navController,
             answerData = listOf(
-                QuestionUiState.TrueFalse(QuestionData.TrueFalse("安東尼", "Andongni", true), true),
-                QuestionUiState.Written(QuestionData.Written("蘋果", "apple"), "aeppl")
+                QuestionUiState.TrueFalse(QuestionData.TrueFalse("安東尼", CardDetail(), "Andongni", true), true),
+                QuestionUiState.Written(QuestionData.Written("蘋果", CardDetail(), "apple"), "aeppl")
             )
         )
     }
@@ -67,7 +67,7 @@ fun TestResultPanel(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.result)) },
+                title = {  },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -81,38 +81,21 @@ fun TestResultPanel(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item {
-                ScoreIndicator(score)
-            }
 
             item {
                 Spacer(Modifier.height(16.dp))
-                Text(stringResource(R.string.detailed_information),
+                Text(stringResource(R.string.result),
                     modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.headlineMedium,
                     textAlign = TextAlign.Start)
             }
 
             item {
-                InformationIndicator(
-                    icon = Icons.Filled.Check,
-                    progress = score.toFloat(),
-                    count = correct.toString(),
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
-
-            item {
-                InformationIndicator(
-                    icon = Icons.Filled.Close,
-                    progress = (1 - score).toFloat(),
-                    count = (count - correct).toString(),
-                    color = LightErrorColor
-                )
+                ScoreIndicator(score)
             }
 
             item {
@@ -121,6 +104,21 @@ fun TestResultPanel(
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Start)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    InformationIndicator(
+                        count = correct.toString(),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    InformationIndicator(
+                        count = (count - correct).toString(),
+                        color = LightErrorColor
+                    )
+                }
+
             }
 
             items(answerData) {
@@ -149,7 +147,7 @@ private fun ScoreIndicator(
     progress: Float
 ) {
     Spacer(Modifier.height(16.dp))
-    var progress by remember { mutableStateOf(progress) }
+    var progress by remember { mutableFloatStateOf(progress) }
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         label = "Progress Animation",
@@ -157,63 +155,52 @@ private fun ScoreIndicator(
     )
 
     Column(
-        modifier = Modifier.fillMaxWidth().height(150.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy((-90).dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 20.dp)
-                .clip(RoundedCornerShape(percent = 25))
-                .background(MaterialTheme.colorScheme.secondaryContainer)
-        ) {
-            LinearProgressIndicator(
-                progress = { animatedProgress },
-                modifier = Modifier.matchParentSize(),
-                color = MaterialTheme.colorScheme.primary,
-                strokeCap = StrokeCap.Butt,
-                trackColor = Color.Transparent,
-                drawStopIndicator = {}
-            )
-        }
 
-        Box(
-            Modifier.padding(start = 25.dp)
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 (progress * 100).toInt().toString(),
-                fontFamily = Impact,
-                style = MaterialTheme.typography.displayMedium
+//                fontFamily = Impact,
+                style = MaterialTheme.typography.displayMedium,
+                modifier = Modifier.alignByBaseline()
+            )
+            Text(
+                "%",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.alignByBaseline()
             )
         }
+
+        LinearProgressIndicator(
+            progress = { animatedProgress },
+            modifier = Modifier.fillMaxWidth().height(20.dp),
+            color = MaterialTheme.colorScheme.primary,
+//            trackColor = Color.Transparent,
+            drawStopIndicator = {}
+        )
+
+
     }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun InformationIndicator(
-    icon: ImageVector,
-    progress: Float,
     count: String,
-    color: Color
+    color: Color,
+    onClick: () -> Unit = {}
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(end = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Button(
+        colors = buttonColors(containerColor = color.copy(alpha = 0.7f)),
+        onClick = onClick
     ) {
-        Icon(
-            modifier = Modifier.weight(1f),
-            imageVector = icon,
-            contentDescription = "Icon",
-            tint = color)
-        LinearProgressIndicator(
-            progress = { progress },
-            modifier = Modifier.weight(10f).height(8.dp),
-            color = color,
-        )
-        Text(count, Modifier.weight(1f), textAlign = TextAlign.End)
+        Text(count)
     }
 }
 
@@ -226,7 +213,7 @@ private fun OptionResult(
     val color = when (state) {
         OptionUiState.None -> MaterialTheme.colorScheme.surface
         OptionUiState.Correct -> MaterialTheme.colorScheme.secondary
-        OptionUiState.Wrong -> MaterialTheme.colorScheme.outlineVariant
+        OptionUiState.Wrong -> LightErrorColor
     }
 
     val icon = when (state) {
@@ -239,26 +226,14 @@ private fun OptionResult(
         modifier = Modifier.fillMaxWidth().height(125.dp)
     ) {
 
-        Card(
-            shape = RoundedCornerShape(
-                topStart = 12.dp,
-                bottomStart = 12.dp,
-                topEnd = 1.dp,
-                bottomEnd = 1.dp
-            ),
-            colors = CardDefaults.cardColors(containerColor = color),
-            modifier = Modifier.width(15.dp).fillMaxHeight()
-        ){}
-
         Spacer(Modifier.width(2.dp))
 
         OutlinedCard(
             modifier = Modifier.fillMaxHeight(),
-            shape = RoundedCornerShape(
-                topStart = 1.dp,
-                bottomStart = 1.dp,
-                topEnd = 12.dp,
-                bottomEnd = 12.dp
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline
             ),
         ) {
             Column(

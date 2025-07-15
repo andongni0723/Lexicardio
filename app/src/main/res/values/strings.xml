@@ -55,4 +55,8 @@
     <string name="result">Result</string>
     <string name="detailed_information">Detailed Information</string>
     <string name="your_answers">Your Answers</string>
+    <string name="random">Random</string>
+    <string name="written_mode">Written Mode</string>
+    <string name="start_learn">Start Learn</string>
+    <string name="learn_mode_start_setting">Learn Mode Start Setting</string>
 </resources>

@@ -27,6 +27,7 @@ import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
+//region Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
@@ -37,6 +38,7 @@ fun TestModeStartSettingPreview() {
             listOf(CardDetail(), CardDetail(), CardDetail())))
     }
 }
+//endregion
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,118 +131,17 @@ fun TestModeStartSetting(
             Spacer(Modifier.height(16.dp))
 
             // Start Test Button
-            Button(
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                enabled = (data.trueFalseMode || data.writtenMode || data.multipleChoiceMode),
+            PageMainButton(
+                title = stringResource(R.string.start_test),
+                enable = data.trueFalseMode || data.writtenMode || data.multipleChoiceMode,
                 onClick = {
                     Log.d("TestModeStartSetting", "data: $data")
                     navController.popBackStack()
                     navController.currentBackStackEntry?.savedStateHandle?.set("testSetting", data)
                     navController.navigate(NavRoute.TestMode.route)
                 }
-            ) {
-                Text(stringResource(R.string.start_test), style = MaterialTheme.typography.titleMedium)
-            }
+            )
         }
     }
 }
 
-@Composable
-private fun SwitchSetting(
-    title: String,
-    checked: Boolean,
-    onChange: (Boolean) -> Unit
-) {
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Switch(
-            modifier = Modifier.size(52.dp, 32.dp),
-            checked = checked,
-            colors = SwitchDefaults.colors(
-                uncheckedBorderColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
-                uncheckedThumbColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
-                uncheckedTrackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-            ),
-            onCheckedChange = onChange
-        )
-    }
-}
-
-@Composable
-private fun TextFieldSetting(
-    title: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    commitValue: () -> Unit,
-) {
-    val focusManager   = LocalFocusManager.current
-    val focusRequester = remember { FocusRequester() }
-
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    commitValue()
-                    focusManager.clearFocus()
-                }
-            ),
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
-            modifier = Modifier
-                .width(100.dp)
-                .padding(vertical = 16.dp)
-                .focusRequester(focusRequester)
-                .onFocusChanged { state ->
-                    if (!state.isFocused)
-                        commitValue()
-                }
-        )
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun SegmentButtonGroupSetting(
-    title: String,
-    options: List<Pair<Int, AnswerType>>,
-    selected: (AnswerType) -> Boolean = { true },
-    onClick: (Int, AnswerType) -> Unit,
-) {
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-
-        SingleChoiceSegmentedButtonRow(
-            Modifier.width(200.dp)
-        ) {
-            options.forEachIndexed { idx, (option, enum) ->
-                SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(idx, options.size),
-                    selected = selected(enum),
-                    onClick = { onClick(option, enum) },
-                ) {
-                    Text(stringResource(option))
-                }
-            }
-        }
-    }
-}

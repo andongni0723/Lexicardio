@@ -104,7 +104,14 @@ fun CardSetOverviewPanel(
 
             item {
                 Button(
-                    onClick = { navController.navigate(NavRoute.LearnMode.route) },
+                    onClick = {
+                        // Save data
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("cardSetDetail", cardSetDetail)
+
+                        navController.navigate(NavRoute.LearnModeStartSetting.route)
+                    },
                     Modifier.fillMaxWidth().height(60.dp),
                     shape = RoundedCornerShape(10.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),

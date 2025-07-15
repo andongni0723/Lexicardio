@@ -41,7 +41,7 @@
     <string name="folder">文件夹</string>
     <string name="confirm">确认</string>
     <string name="space">空白鍵</string>
-    <string name="test_mode_start_setting">「测试模式初始化设置」</string>
+    <string name="test_mode_start_setting">测试模式初始化设置</string>
     <string name="true_or_false">判断题</string>
     <string name="multiple_choice">选择题</string>
     <string name="written">填空题</string>
@@ -54,4 +54,8 @@
     <string name="result">结果</string>
     <string name="detailed_information">详细</string>
     <string name="your_answers">你的答案</string>
+    <string name="random">随机</string>
+    <string name="written_mode">书写模式</string>
+    <string name="start_learn">开始学习</string>
+    <string name="learn_mode_start_setting">学习模式初始设定</string>
 </resources>

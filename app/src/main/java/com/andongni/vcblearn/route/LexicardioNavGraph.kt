@@ -18,9 +18,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.andongni.vcblearn.MyApp
+import com.andongni.vcblearn.data.CardDetail
 import com.andongni.vcblearn.data.CardSetJson
 import com.andongni.vcblearn.data.FolderEntry
 import com.andongni.vcblearn.data.JsonEntry
+import com.andongni.vcblearn.data.LearnModelSettingDetail
 import com.andongni.vcblearn.data.QuestionData
 import com.andongni.vcblearn.data.QuestionUiState
 import com.andongni.vcblearn.data.TestModelSettingDetail
@@ -28,11 +30,12 @@ import com.andongni.vcblearn.ui.panel.CardSetOverviewPanel
 import com.andongni.vcblearn.ui.panel.CreateCardSetScreen
 import com.andongni.vcblearn.ui.panel.FolderPanel
 import com.andongni.vcblearn.ui.panel.ImportCsvDataPanel
-import com.andongni.vcblearn.ui.panel.LearnModePanel
+import com.andongni.vcblearn.ui.panel.study.TestModePanel
 import com.andongni.vcblearn.ui.panel.setting.SettingPanel
+import com.andongni.vcblearn.ui.panel.study.LearnModePanel
+import com.andongni.vcblearn.ui.panel.study.LearnModeStartSetting
 import com.andongni.vcblearn.ui.panel.study.TestModeStartSetting
 import com.andongni.vcblearn.ui.panel.study.TestResultPanel
-import java.net.URLEncoder
 
 sealed class NavRoute(val route: String) {
     data object Home : NavRoute("home")
@@ -49,9 +52,10 @@ sealed class NavRoute(val route: String) {
         const val nameArg = "name"
         const val base64EncodeUriArg = "uri"
     }
-    data object LearnMode : NavRoute("learn_mode")
     data object TestModeStartSetting : NavRoute("test_model_start_setting")
     data object TestMode  : NavRoute("test_mode")
+    data object LearnModeStartSetting : NavRoute("learn_mode_start_setting")
+    data object LearnMode : NavRoute("learn_mode")
     data object TestModeResult : NavRoute("test_mode_result")
 }
 
@@ -116,8 +120,30 @@ fun LexicardioNavGraph() {
             CardSetOverviewPanel(navController, JsonEntry(name, decodeUri))
         }
 
+        composable(NavRoute.LearnModeStartSetting.route) {
+            val parentEntry = remember(it) {
+                navController.previousBackStackEntry
+            }
+
+            val cardSetData = parentEntry
+                ?.savedStateHandle
+                ?.get<CardSetJson>("cardSetDetail")
+                ?: CardSetJson()
+
+            LearnModeStartSetting(navController, cardSetData)
+        }
+
         composable(NavRoute.LearnMode.route) {
-            LearnModePanel(navController, TestModelSettingDetail(CardSetJson()))
+            val parentEntry = remember(it) {
+                navController.previousBackStackEntry
+            }
+
+            val testSetting = parentEntry
+                ?.savedStateHandle
+                ?.get<LearnModelSettingDetail>("learnSetting")
+                ?: LearnModelSettingDetail(CardSetJson())
+
+            LearnModePanel(navController, testSetting)
         }
 
         composable(NavRoute.TestModeStartSetting.route) {
@@ -143,7 +169,7 @@ fun LexicardioNavGraph() {
                 ?.get<TestModelSettingDetail>("testSetting")
                 ?: TestModelSettingDetail(CardSetJson())
 
-            LearnModePanel(navController, testSetting)
+            TestModePanel(navController, testSetting)
         }
 
         composable(NavRoute.TestModeResult.route) {
@@ -154,7 +180,7 @@ fun LexicardioNavGraph() {
             val answerData = parentEntry
                 ?.savedStateHandle
                 ?.get<ArrayList<QuestionUiState>>("answerData")
-                ?: listOf(QuestionUiState.TrueFalse(QuestionData.TrueFalse("", "", true), true))
+                ?: listOf(QuestionUiState.TrueFalse(QuestionData.TrueFalse("", CardDetail() ,"", true), true))
 
             TestResultPanel(navController, answerData)
         }
