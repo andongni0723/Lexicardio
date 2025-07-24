@@ -1,5 +1,7 @@
 package com.andongni.vcblearn.ui.panel
 
+import android.content.ClipData
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
@@ -12,7 +14,12 @@ import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.carousel.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
@@ -23,6 +30,7 @@ import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
+import kotlinx.coroutines.launch
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +57,15 @@ fun CardSetOverviewPanel(
         value = viewModel.getCardSetJsonDetail(cardSetData.uri)
     }
 
+    var menuExpanded by remember { mutableStateOf(false) }
+    val snackBarHostState = remember { SnackbarHostState() }
+
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackBarHostState) { data ->
+                Snackbar(snackbarData = data)
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text("") },
@@ -62,9 +78,37 @@ fun CardSetOverviewPanel(
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Filled.Folder, contentDescription = "Folder")
                     }
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.MoreHoriz, contentDescription = "More")
+
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Filled.MoreHoriz, contentDescription = "More")
+                        }
+
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            val clipboard = LocalClipboard.current
+                            val scope = rememberCoroutineScope()
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.export_text)) },
+                                onClick = {
+                                    val text = cardSetDetail.toCsv()
+                                    scope.launch {
+                                        val clip = ClipEntry(ClipData.newPlainText("", text))
+                                        clipboard.setClipEntry(clip)
+                                    }
+                                    menuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Filled.Download, contentDescription = "Export")
+                                }
+                            )
+                        }
                     }
+
+
                 },
                 scrollBehavior = scrollBehavior
             )
@@ -170,7 +214,7 @@ fun CardSetOverviewPanel(
             }
 
             item {
-                Text("Cards")
+                Text(stringResource(R.string.cards))
             }
 
             items(

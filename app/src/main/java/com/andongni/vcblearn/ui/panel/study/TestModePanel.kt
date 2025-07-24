@@ -119,8 +119,3 @@ fun TestModePanel(
         }
     }
 }
-
-
-private fun onNext(){
-
-}

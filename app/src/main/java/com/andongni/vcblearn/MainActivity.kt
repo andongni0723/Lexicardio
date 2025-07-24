@@ -270,7 +270,6 @@ fun Library(
     val context = LocalContext.current
     val folderUri by viewModel.userFolder.collectAsState(null)
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()

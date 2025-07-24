@@ -58,4 +58,5 @@
     <string name="written_mode">書寫模式</string>
     <string name="start_learn">開始學習</string>
     <string name="learn_mode_start_setting">學習模式初始設定</string>
+    <string name="export_text">匯出成文字</string>
 </resources>

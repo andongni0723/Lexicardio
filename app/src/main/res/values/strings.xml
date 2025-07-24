@@ -59,4 +59,5 @@
     <string name="written_mode">Written Mode</string>
     <string name="start_learn">Start Learn</string>
     <string name="learn_mode_start_setting">Learn Mode Start Setting</string>
+    <string name="export_text">Export Text</string>
 </resources>

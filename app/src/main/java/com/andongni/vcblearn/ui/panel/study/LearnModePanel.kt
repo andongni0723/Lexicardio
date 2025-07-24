@@ -1,6 +1,9 @@
 package com.andongni.vcblearn.ui.panel.study
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -16,7 +19,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.data.*
-import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
 //region Preview
@@ -40,9 +42,10 @@ fun LearnModePanel(
 ) {
     viewModel.initialize(settingDetail)
 
-    var currentQuestion by remember {
-        mutableStateOf(viewModel.getNextQuestion().toUiState())
-    }
+    var currentQuestion by remember { mutableStateOf(viewModel.getNextQuestion().toUiState()) }
+    var showBatchEnd    by remember { mutableStateOf(false) }
+    var batchCards      by remember { mutableStateOf(emptyList<CardDetail>()) }
+    val thisBatchCards   = remember { mutableStateListOf<CardDetail>() }
 
     Scaffold(
         topBar = {
@@ -86,20 +89,47 @@ fun LearnModePanel(
                 Text(viewModel.maxProgress.toString(), Modifier.weight(1f), textAlign = TextAlign.End)
             }
 
-            QuestionContent(
-                uiState = currentQuestion,
-                onStateChange = { newUI ->
-                    currentQuestion = newUI
-                    Log.d("LearnModePanel", "onStateChange: $newUI")
-                },
-                onNext = {
-                    viewModel.updateCardState(currentQuestion)
-                    if (viewModel.haveQuestion()) {
-                        currentQuestion = viewModel.getNextQuestion().toUiState()
-                    } else
-                        navController.popBackStack()
+            fun nextAction() = with(viewModel) {
+                updateCardState(currentQuestion)
+                thisBatchCards += currentQuestion.data.cardDetail
+
+                when {
+                    // Study Done
+                    !haveQuestion() -> navController.popBackStack()
+
+                    // Batch End
+                    currentBatch.none { it.state != CardState.WRITTEN_FAILED } -> {
+                        batchCards = thisBatchCards.distinct().also { thisBatchCards.clear() }
+                        showBatchEnd = true
+                    }
+
+                    // Get Next Question
+                    else -> currentQuestion = getNextQuestion().toUiState()
                 }
-            )
+            }
+
+            AnimatedVisibility(
+                visible = showBatchEnd,
+                exit = ExitTransition.None
+            ) {
+                BatchEndContent(
+                    cards = batchCards,
+                    onNext = {
+                        showBatchEnd = false
+                        currentQuestion = viewModel.getNextQuestion().toUiState()
+                    }
+                )
+            }
+
+            if (!showBatchEnd) {
+                QuestionContent(
+                    uiState = currentQuestion,
+                    onStateChange = { newUI ->
+                        currentQuestion = newUI
+                    },
+                    onNext = { nextAction() }
+                )
+            }
         }
     }
 }

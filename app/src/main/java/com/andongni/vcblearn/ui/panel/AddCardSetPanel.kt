@@ -1,11 +1,8 @@
 package com.andongni.vcblearn.ui.panel
 
 import android.content.res.Resources
-import android.util.Log
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
@@ -19,7 +16,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults.textFieldColors
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -27,8 +23,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -76,6 +71,7 @@ fun CreateCardSetScreen(
     LaunchedEffect(importedCards?.value) {
         importedCards?.value?.let { list ->
             if (list.isNotEmpty()) {
+                if (viewModel.cardsIsDefault) viewModel.clearCards()
                 viewModel.addCards(list)
                 navController.currentBackStackEntry
                     ?.savedStateHandle?.remove<List<CardDetail>>("importCards")

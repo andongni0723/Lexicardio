@@ -11,8 +11,10 @@ import javax.inject.Inject
 open class CardSetEditorViewModel @Inject constructor() : ViewModel() {
     private val _cards = MutableStateFlow<List<CardDetail>>(listOf(CardDetail(), CardDetail()))
     val cards = _cards.asStateFlow()
+    var cardsIsDefault = true
 
     fun addCard() {
+        cardsIsDefault = false
         _cards.update { it + CardDetail() }
     }
 
@@ -29,7 +31,12 @@ open class CardSetEditorViewModel @Inject constructor() : ViewModel() {
     }
 
     fun addCards(newCards: List<CardDetail>) {
+        cardsIsDefault = false
         _cards.update { it + newCards }
+    }
+
+    fun clearCards() {
+        _cards.update { emptyList() }
     }
 
     fun csvConvertCardList(

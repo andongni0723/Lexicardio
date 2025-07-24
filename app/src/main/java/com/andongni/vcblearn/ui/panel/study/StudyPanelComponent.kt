@@ -2,6 +2,8 @@ package com.andongni.vcblearn.ui.panel.study
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.*
 import androidx.compose.material.icons.Icons
@@ -9,17 +11,16 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
+import com.andongni.vcblearn.ui.panel.WordCard
 import com.andongni.vcblearn.ui.theme.LightErrorColor
 
 @Composable
@@ -391,6 +392,36 @@ fun SegmentButtonGroupSetting(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun BatchEndContent(
+    cards: List<CardDetail>,
+    onNext: () -> Unit
+) {
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(top = 16.dp)
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(12f),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            items(cards) { card ->
+                WordCard(card)
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Box(Modifier.fillMaxWidth().padding(bottom = 24.dp)){
+            PageMainButton(
+                title = "Next",
+                onClick = onNext
+            )
+        }
+
     }
 }
 

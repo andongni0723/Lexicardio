@@ -28,97 +28,117 @@ data class LearnCardDetail(
     val state: CardState,
 )
 
+private const val MAX_QUESTIONS_PRE_BATCH = 7
+
 @HiltViewModel
 open class LearnModeModel @Inject constructor(
     private val dataManager: DataManager
 ) : ViewModel() {
 
-    var optionPool: List<String> = emptyList()
-    var progress: Int = 0
-    var maxProgress: Int = 0
 
-    var cardComparator = compareBy<LearnCardDetail> { it.state.priority }
-    var learningQueue= PriorityQueue<LearnCardDetail>(cardComparator)
-    var settingData = LearnModelSettingDetail(CardSetJson())
+    var cardComparator  = compareBy<LearnCardDetail> { it.state.priority }
+    var currentBatch    = PriorityQueue(cardComparator)
+    var nextBatch       = PriorityQueue(cardComparator)
+
+    var optionPool: List<String> = emptyList()
+    var progress    = 1
+    var maxProgress = 0
+    lateinit var settingData: LearnModelSettingDetail
+        private set
 
     fun initialize(data: LearnModelSettingDetail) {
         settingData = data
         maxProgress = data.cardSetJson.cards.size * 2
-        val cards: List<CardDetail> = data.cardSetJson.cards.let { if(data.random) it.shuffled() else it }
+        progress = 1
+
+        val cards = data.cardSetJson.cards.let { if (data.random) it.shuffled() else it }
+
         val wordPool       = cards.map { it.word }.distinct()
         val definitionPool = cards.map { it.definition }.distinct()
         optionPool = if (data.answerType == AnswerType.Word) wordPool else definitionPool
 
-        learningQueue.clear()
-        learningQueue.addAll(
-            cards.map { LearnCardDetail(it, CardState.LEARNING_MC)}
-        )
+        currentBatch.clear(); nextBatch.clear()
+        val firstBatch = cards.take(MAX_QUESTIONS_PRE_BATCH)
+        val remaining  = cards.drop(MAX_QUESTIONS_PRE_BATCH)
+        currentBatch += firstBatch.map { LearnCardDetail(it, CardState.LEARNING_MC) }
+        nextBatch    += remaining.map  { LearnCardDetail(it, CardState.LEARNING_MC) }
     }
+
+    private fun refillCurrentBatchIfNeeded() {
+        // Check have LEARNING_MC or AWAITING_WRITE card
+        if (currentBatch.count { it.state != CardState.WRITTEN_FAILED } > 0) return
+
+        // Only WRITTEN_FAILED or no card, Refill batch
+        val it = nextBatch.iterator()
+        var quota = MAX_QUESTIONS_PRE_BATCH
+        while (it.hasNext() && quota > 0) {
+            val item = it.next()
+            if (item.state != CardState.WRITTEN_FAILED) quota--
+            currentBatch += item
+            it.remove()
+        }
+    }
+
 
     fun getNextQuestion(): QuestionData {
 
-        var item = learningQueue.poll() ?: return QuestionData.TrueFalse(
-            title = "No more cards",
-            cardDetail = CardDetail(),
-            shownText = "",
-            correct = false
-        )
+        refillCurrentBatchIfNeeded()
 
+        var item = currentBatch.poll() ?: return dummyEndQuestion()
         return when(item.state) {
-            CardState.WRITTEN_FAILED,
-            CardState.AWAITING_WRITE ->
-                makeWritten(item.card, settingData.answerType)
-
-            CardState.LEARNING_MC ->
-                makeMultipleChoice(item.card, settingData.answerType, optionPool)
+            CardState.AWAITING_WRITE,
+            CardState.WRITTEN_FAILED  -> makeWritten(item.card)
+            CardState.LEARNING_MC     -> makeMultipleChoice(item.card)
         }
     }
 
     fun updateCardState(uiState: QuestionUiState) {
         when (uiState) {
             is QuestionUiState.MultipleChoice -> {
-                if(uiState.isCorrect)
+                if(uiState.isCorrect) {
                     progress++
-                val type = if (uiState.isCorrect) CardState.AWAITING_WRITE else CardState.LEARNING_MC
-                learningQueue.add(LearnCardDetail(uiState.data.cardDetail, type))
+                    nextBatch += LearnCardDetail(uiState.data.cardDetail, CardState.AWAITING_WRITE)
+                } else {
+                    currentBatch += LearnCardDetail(uiState.data.cardDetail, CardState.LEARNING_MC)
+                }
             }
 
             is QuestionUiState.Written -> {
-                if (uiState.isCorrect)
+                if (uiState.isCorrect) {
                     progress++
-                else
-                    learningQueue.add(LearnCardDetail(uiState.data.cardDetail, CardState.WRITTEN_FAILED))
+                } else {
+                    nextBatch += LearnCardDetail(uiState.data.cardDetail, CardState.WRITTEN_FAILED)
+                }
             }
+
             else -> {}
         }
     }
 
-    fun haveQuestion(): Boolean = learningQueue.isNotEmpty()
+    fun haveQuestion(): Boolean = currentBatch.isNotEmpty() || nextBatch.isNotEmpty()
 
-    private fun makeMultipleChoice(
-        cardDetail: CardDetail,
-        answerType: AnswerType,
-        optionPool: List<String>
-    ): QuestionData.MultipleChoice {
-
-        val (question, correctAnswer) = getQuestionAnswerPair(cardDetail, answerType)
-        val distractors = optionPool.filterNot { it == correctAnswer }.shuffled().take(3)
-        val options = (distractors + correctAnswer).shuffled()
-        val answerIndex = options.indexOf(correctAnswer)
-        return QuestionData.MultipleChoice(question, cardDetail, options, answerIndex)
+    private fun makeMultipleChoice(card: CardDetail): QuestionData.MultipleChoice {
+        val (q, ans) = getQAPair(card)
+        val distract = optionPool.filterNot { it == ans }.shuffled().take(3)
+        val options = (distract + ans).shuffled()
+        return QuestionData.MultipleChoice(q, card, options, options.indexOf(ans))
     }
 
-    private fun makeWritten(cardDetail: CardDetail, answerType: AnswerType): QuestionData.Written {
-        val (question, correctAnswer) = getQuestionAnswerPair(cardDetail, answerType)
-        return QuestionData.Written(question, cardDetail, correctAnswer)
+    private fun makeWritten(card: CardDetail): QuestionData.Written {
+        val (q, ans) = getQAPair(card)
+        return QuestionData.Written(q, card, ans)
     }
 
-    private fun getQuestionAnswerPair(
-        cardDetail: CardDetail,
-        answerType: AnswerType
-    ): Pair<String, String> =
-        if (answerType == AnswerType.Word)
-            cardDetail.definition to cardDetail.word
+    private fun getQAPair(c: CardDetail) =
+        if (settingData.answerType == AnswerType.Word)
+            c.definition to c.word
         else
-            cardDetail.word to cardDetail.definition
+            c.word to c.definition
+
+    private fun dummyEndQuestion() = QuestionData.TrueFalse(
+        title = "No more cards",
+        cardDetail = CardDetail(),
+        shownText = "",
+        correct = false
+    )
 }
