@@ -1,0 +1,45 @@
+name: Android Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Extract version from tag
+        run: |
+          echo "VERSION_NAME=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+          echo "VERSION_CODE=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+
+      - name: Build Debug APK (signed with debug keystore)
+        run: |
+          ./gradlew :app:lint :app:test
+          ./gradlew :app:assembleDebug \
+            -PversionName=${{ env.VERSION_NAME }} \
+            -PversionCode=${{ env.VERSION_CODE }}
+
+      - name: Create GitHub Release (auto notes) + upload APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            app/build/outputs/apk/debug/*.apk

@@ -17,7 +17,14 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "0.9"
+
+        val ciVersionName = (project.findProperty("versionName") as String?)
+            ?: System.getenv("VERSION_NAME")
+        val ciVersionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull()
+            ?: System.getenv("VERSION_CODE")?.toIntOrNull()
+
+        if (!ciVersionName.isNullOrBlank()) versionName = ciVersionName
+        if (ciVersionCode != null) versionCode = ciVersionCode
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
