@@ -27,7 +27,7 @@ import com.andongni.vcblearn.ui.theme.LexicardioTheme
 @Preview(showBackground = true)
 @Composable
 fun ImportCsvDataPanelPreview() {
-    LexicardioTheme {
+    LexicardioTheme(themeCode = "dark") {
         val navController = rememberNavController()
         val fakeVm = remember { FakeImportCsvDataViewModel() }
         ImportCsvDataPanel(navController, fakeVm)
@@ -46,7 +46,7 @@ fun ImportCsvDataPanel(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var inputData by remember { mutableStateOf("") }
 
-    var delimiter by remember { mutableStateOf("space") }
+    var delimiter by remember { mutableStateOf("comma") }
     var customDelimiter by remember { mutableStateOf("") }
     var lineBreak by remember { mutableStateOf("new_line") }
     var customLineBreak by remember { mutableStateOf("") }
@@ -55,8 +55,8 @@ fun ImportCsvDataPanel(
 
     LaunchedEffect(delimiter, customDelimiter, lineBreak, customLineBreak, inputData) {
         val delimiterChar = when (delimiter) {
-            "space" -> " "
             "comma" -> ","
+            "space" -> " "
             else -> decodeEscapes(customDelimiter)
         }
 
@@ -70,7 +70,6 @@ fun ImportCsvDataPanel(
         examplePlaceholder = "W1${delimiterChar}D1${lineBreakChar}W2${delimiterChar}D2"
         previewCardList = viewModel.csvConvertCardList(inputData, delimiterChar, lineBreakChar)
     }
-
 
 
     Scaffold(
@@ -127,15 +126,15 @@ fun ImportCsvDataPanel(
                     Text(stringResource(R.string.delimiter), style = MaterialTheme.typography.titleMedium)
 
                     OptionRow(
-                        label = stringResource(R.string.space),
-                        selected = delimiter == "space",
-                        onClick = { delimiter = "space" },
-                    )
-
-                    OptionRow(
                         label = stringResource(R.string.comma),
                         selected = delimiter == "comma",
                         onClick = { delimiter = "comma" },
+                    )
+
+                    OptionRow(
+                        label = stringResource(R.string.space),
+                        selected = delimiter == "space",
+                        onClick = { delimiter = "space" },
                     )
 
                     OptionRow(

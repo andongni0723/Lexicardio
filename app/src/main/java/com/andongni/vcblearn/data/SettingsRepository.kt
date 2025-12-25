@@ -11,10 +11,10 @@ import javax.inject.Singleton
 class SettingsRepository @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
-//    private val appLocaleManager = AppLocaleManager()
     val userFolder = UserPrefsDataStore.folderFlow(context)
     val language = UserPrefsDataStore.languageFlow(context)
     val theme = UserPrefsDataStore.themeFlow(context)
+    val testSettings = UserPrefsDataStore.testSettingFlow(context)
 
     suspend fun saveUserFolder(path: String) {
         UserPrefsDataStore.saveFolder(context, path)
@@ -28,4 +28,7 @@ class SettingsRepository @Inject constructor(
         UserPrefsDataStore.saveTheme(context, theme)
     }
 
+    suspend fun saveTestSetting(data: TestModelSettingDetail) {
+        UserPrefsDataStore.saveTestSetting(context, data)
+    }
 }

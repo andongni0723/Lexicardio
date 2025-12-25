@@ -59,4 +59,6 @@
     <string name="start_learn">开始学习</string>
     <string name="learn_mode_start_setting">学习模式初始设定</string>
     <string name="export_text">"导出文字 "</string>
+    <string name="congrats">"恭喜你 "</string>
+    <string name="user_done_study_content">" 你完成了这个卡组的学习。"</string>
 </resources>

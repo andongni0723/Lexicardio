@@ -14,7 +14,8 @@ data class LearnModelSettingDetail(
     val cardSetJson: CardSetJson,
     var answerType: AnswerType = AnswerType.Word,
     var random: Boolean = false,
-    var onlyWritten: Boolean = false,
+    var multipleChoiceMode: Boolean = true,
+    var writtenMode: Boolean = true,
 ) : Parcelable
 
 enum class CardState(val priority: Int) {
@@ -26,6 +27,7 @@ enum class CardState(val priority: Int) {
 data class LearnCardDetail(
     val card: CardDetail,
     val state: CardState,
+    val order: Long,
 )
 
 private const val MAX_QUESTIONS_PRE_BATCH = 7
@@ -35,21 +37,22 @@ open class LearnModeModel @Inject constructor(
     private val dataManager: DataManager
 ) : ViewModel() {
 
-
-    var cardComparator  = compareBy<LearnCardDetail> { it.state.priority }
+    var cardComparator  = compareBy<LearnCardDetail> { it.state.priority }.thenBy { it.order }
     var currentBatch    = PriorityQueue(cardComparator)
     var nextBatch       = PriorityQueue(cardComparator)
+    private var orderCounter = 0L
 
     var optionPool: List<String> = emptyList()
     var progress    = 1
     var maxProgress = 0
     lateinit var settingData: LearnModelSettingDetail
-        private set
 
     fun initialize(data: LearnModelSettingDetail) {
         settingData = data
-        maxProgress = data.cardSetJson.cards.size * 2
+        val enabledModeCount = listOf(data.multipleChoiceMode, data.writtenMode).count { it }
+        maxProgress = data.cardSetJson.cards.size * enabledModeCount
         progress = 1
+        orderCounter = 0L
 
         val cards = data.cardSetJson.cards.let { if (data.random) it.shuffled() else it }
 
@@ -60,8 +63,13 @@ open class LearnModeModel @Inject constructor(
         currentBatch.clear(); nextBatch.clear()
         val firstBatch = cards.take(MAX_QUESTIONS_PRE_BATCH)
         val remaining  = cards.drop(MAX_QUESTIONS_PRE_BATCH)
-        currentBatch += firstBatch.map { LearnCardDetail(it, CardState.LEARNING_MC) }
-        nextBatch    += remaining.map  { LearnCardDetail(it, CardState.LEARNING_MC) }
+        var cardStartState = if (data.multipleChoiceMode)  CardState.LEARNING_MC else CardState.AWAITING_WRITE
+        currentBatch += firstBatch.map { LearnCardDetail(it, cardStartState, nextOrder()) }
+        nextBatch    += remaining.map  { LearnCardDetail(it, cardStartState, nextOrder()) }
+    }
+
+    private fun nextOrder(): Long {
+        return ++orderCounter;
     }
 
     private fun refillCurrentBatchIfNeeded() {
@@ -84,7 +92,7 @@ open class LearnModeModel @Inject constructor(
 
         refillCurrentBatchIfNeeded()
 
-        var item = currentBatch.poll() ?: return dummyEndQuestion()
+        var item = currentBatch.poll() ?: return dummyQuestion()
         return when(item.state) {
             CardState.AWAITING_WRITE,
             CardState.WRITTEN_FAILED  -> makeWritten(item.card)
@@ -97,9 +105,12 @@ open class LearnModeModel @Inject constructor(
             is QuestionUiState.MultipleChoice -> {
                 if(uiState.isCorrect) {
                     progress++
-                    nextBatch += LearnCardDetail(uiState.data.cardDetail, CardState.AWAITING_WRITE)
+                    if (settingData.writtenMode)
+                        nextBatch += LearnCardDetail(
+                            uiState.data.cardDetail, CardState.AWAITING_WRITE, nextOrder())
                 } else {
-                    currentBatch += LearnCardDetail(uiState.data.cardDetail, CardState.LEARNING_MC)
+                    currentBatch += LearnCardDetail(
+                        uiState.data.cardDetail, CardState.LEARNING_MC, nextOrder())
                 }
             }
 
@@ -107,7 +118,8 @@ open class LearnModeModel @Inject constructor(
                 if (uiState.isCorrect) {
                     progress++
                 } else {
-                    nextBatch += LearnCardDetail(uiState.data.cardDetail, CardState.WRITTEN_FAILED)
+                    nextBatch += LearnCardDetail(
+                        uiState.data.cardDetail, CardState.WRITTEN_FAILED, nextOrder())
                 }
             }
 
@@ -135,7 +147,7 @@ open class LearnModeModel @Inject constructor(
         else
             c.word to c.definition
 
-    private fun dummyEndQuestion() = QuestionData.TrueFalse(
+    fun dummyQuestion() = QuestionData.TrueFalse(
         title = "No more cards",
         cardDetail = CardDetail(),
         shownText = "",

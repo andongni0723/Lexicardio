@@ -57,6 +57,7 @@ fun LearnModeStartSetting(
             Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 48.dp)){
                 PageMainButton(
                     title = stringResource(R.string.start_learn),
+                    enable = data.multipleChoiceMode || data.writtenMode,
                     onClick = {
                         Log.d("TestModeStartSetting", "data: $data")
                         navController.popBackStack()
@@ -93,11 +94,20 @@ fun LearnModeStartSetting(
                 onChange = { data = data.copy(random = it) }
             )
 
-            // Only Written
+            HorizontalDivider()
+
+            // Choice
             SwitchSetting(
-                stringResource(R.string.written_mode),
-                checked = data.onlyWritten,
-                onChange = { data = data.copy(onlyWritten = it) }
+                stringResource(R.string.multiple_choice),
+                checked = data.multipleChoiceMode,
+                onChange = { data = data.copy(multipleChoiceMode = it) }
+            )
+
+            // Written
+            SwitchSetting(
+                stringResource(R.string.written),
+                checked = data.writtenMode,
+                onChange = { data = data.copy(writtenMode = it) }
             )
         }
     }

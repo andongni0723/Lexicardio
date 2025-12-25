@@ -60,4 +60,6 @@
     <string name="start_learn">Start Learn</string>
     <string name="learn_mode_start_setting">Learn Mode Start Setting</string>
     <string name="export_text">Export Text</string>
+    <string name="congrats">Congratulations</string>
+    <string name="user_done_study_content">You complete the study of this card set.</string>
 </resources>

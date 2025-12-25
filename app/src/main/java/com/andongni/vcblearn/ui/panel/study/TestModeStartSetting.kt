@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
@@ -45,14 +47,21 @@ fun TestModeStartSettingPreview() {
 fun TestModeStartSetting(
     navController: NavController,
     cardJson: CardSetJson = CardSetJson(),
-//    viewModel: DataManagerModel = hiltViewModel()
+    viewModel: TestModeStartSettingModel = hiltViewModel()
 ) {
+    val saved by viewModel.saved.collectAsState(initial = null)
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val maxCount = cardJson.cards.count().coerceAtLeast(1)
-
-    var data by remember { mutableStateOf(TestModelSettingDetail(cardJson, maxCount)) }
-    var text by remember { mutableStateOf(maxCount.toString()) }
+    var data by rememberSaveable { mutableStateOf(TestModelSettingDetail(cardJson, maxCount)) }
+    var text by rememberSaveable { mutableStateOf(data.questionCount.toString()) }
     var questionCount by remember { mutableIntStateOf(maxCount) }
+
+    LaunchedEffect(saved, cardJson) {
+        saved?.let {
+            data = it.copy(cardJson, maxCount)
+            text = data.questionCount.toString()
+        }
+    }
 
     Log.d("TestModeStartSetting", "cardJson: $cardJson")
 
@@ -67,6 +76,21 @@ fun TestModeStartSetting(
                 },
                 scrollBehavior = scrollBehavior
             )
+        },
+        bottomBar = {
+            Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 48.dp)) {
+                PageMainButton(
+                    title = stringResource(R.string.start_test),
+                    enable = data.trueFalseMode || data.writtenMode || data.multipleChoiceMode,
+                    onClick = {
+                        Log.d("TestModeStartSetting", "data: $data")
+                        viewModel.save(data)
+                        navController.popBackStack()
+                        navController.currentBackStackEntry?.savedStateHandle?.set("testSetting", data)
+                        navController.navigate(NavRoute.TestMode.route)
+                    }
+                )
+            }
         },
         containerColor = MaterialTheme.colorScheme.surface,
     ) { inner ->
@@ -126,20 +150,6 @@ fun TestModeStartSetting(
                 stringResource(R.string.written),
                 checked = data.writtenMode,
                 onChange = { data = data.copy(writtenMode = it) }
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            // Start Test Button
-            PageMainButton(
-                title = stringResource(R.string.start_test),
-                enable = data.trueFalseMode || data.writtenMode || data.multipleChoiceMode,
-                onClick = {
-                    Log.d("TestModeStartSetting", "data: $data")
-                    navController.popBackStack()
-                    navController.currentBackStackEntry?.savedStateHandle?.set("testSetting", data)
-                    navController.navigate(NavRoute.TestMode.route)
-                }
             )
         }
     }

@@ -287,7 +287,7 @@ fun WordCard(card: CardDetail) {
                 Text(
                     card.word,
                     style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
@@ -298,6 +298,7 @@ fun WordCard(card: CardDetail) {
             )
             Text(card.definition,
                 modifier = Modifier,
+                maxLines = 2,
                 style = MaterialTheme.typography.headlineMedium)
         }
     }

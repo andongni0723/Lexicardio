@@ -1,23 +1,24 @@
 package com.andongni.vcblearn.ui.panel.study
 
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
@@ -40,12 +41,23 @@ fun LearnModePanel(
     settingDetail: LearnModelSettingDetail,
     viewModel: LearnModeModel = hiltViewModel()
 ) {
-    viewModel.initialize(settingDetail)
 
-    var currentQuestion by remember { mutableStateOf(viewModel.getNextQuestion().toUiState()) }
-    var showBatchEnd    by remember { mutableStateOf(false) }
-    var batchCards      by remember { mutableStateOf(emptyList<CardDetail>()) }
-    val thisBatchCards   = remember { mutableStateListOf<CardDetail>() }
+    var currentQuestion by rememberSaveable {
+        mutableStateOf<QuestionUiState>(viewModel.dummyQuestion().toUiState())
+    }
+    var showBatchEnd by rememberSaveable { mutableStateOf(false) }
+    var batchCards by rememberSaveable { mutableStateOf(emptyList<CardDetail>()) }
+    var isStudyEnd by rememberSaveable { mutableStateOf(false) }
+    val thisBatchCards = remember { mutableStateListOf<CardDetail>() }
+
+    LaunchedEffect(settingDetail) {
+        viewModel.initialize(settingDetail)
+        showBatchEnd = false
+        isStudyEnd = false
+        batchCards = emptyList()
+        thisBatchCards.clear()
+        currentQuestion = viewModel.getNextQuestion().toUiState()
+    }
 
     Scaffold(
         topBar = {
@@ -74,7 +86,8 @@ fun LearnModePanel(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner)
-                .padding(horizontal = 16.dp).padding(top = 32.dp),
+                .padding(horizontal = 16.dp)
+                .padding(top = 32.dp),
             verticalArrangement = Arrangement.spacedBy(40.dp),
         ) {
             Row(
@@ -84,9 +97,15 @@ fun LearnModePanel(
                 Text(viewModel.progress.toString(), Modifier.weight(1f), textAlign = TextAlign.Left)
                 LinearProgressIndicator(
                     progress = { animatedProgress },
-                    modifier = Modifier.weight(10f).height(16.dp)
+                    modifier = Modifier
+                        .weight(10f)
+                        .height(16.dp)
                 )
-                Text(viewModel.maxProgress.toString(), Modifier.weight(1f), textAlign = TextAlign.End)
+                Text(
+                    viewModel.maxProgress.toString(),
+                    Modifier.weight(1f),
+                    textAlign = TextAlign.End
+                )
             }
 
             fun nextAction() = with(viewModel) {
@@ -95,7 +114,7 @@ fun LearnModePanel(
 
                 when {
                     // Study Done
-                    !haveQuestion() -> navController.popBackStack()
+                    !haveQuestion() -> isStudyEnd = true
 
                     // Batch End
                     currentBatch.none { it.state != CardState.WRITTEN_FAILED } -> {
@@ -131,7 +150,17 @@ fun LearnModePanel(
                 )
             }
         }
+
+        if (isStudyEnd) {
+            AlertDialog(
+                onDismissRequest = { navController.popBackStack() },
+                containerColor = MaterialTheme.colorScheme.background,
+                title = { Text(stringResource(R.string.congrats)) },
+                text = { Text(stringResource(R.string.user_done_study_content)) },
+                confirmButton = {
+                    TextButton(onClick = { navController.popBackStack() }) { Text("Ok") }
+                }
+            )
+        }
     }
 }
-
-

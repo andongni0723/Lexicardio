@@ -28,7 +28,6 @@ import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.SettingFieldData
 import com.andongni.vcblearn.data.SettingPanelViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
-import dagger.hilt.android.qualifiers.ApplicationContext
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)

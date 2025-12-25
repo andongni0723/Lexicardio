@@ -208,8 +208,9 @@ fun Home(navController: NavController) {
                     .padding(top = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(3) {
-                        CardSet(JsonEntry(), navController)
+                    val fakeName = listOf("Read Lesson 1", "Plus Plus U6-2", "Common Phrases")
+                    items(fakeName) {
+                        CardSet(JsonEntry(name = it), navController)
                     }
                 }
             }
