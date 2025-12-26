@@ -1,11 +1,13 @@
 package com.andongni.vcblearn.ui.panel.study
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -16,6 +18,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
+import com.andongni.vcblearn.ui.component.ConfirmLeaveDialog
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
 //region Preview
@@ -43,15 +46,27 @@ fun TestModePanel(
             .map { it.toUiState() }
             .toMutableStateList()
     }
-    var currentQuestion by remember { mutableIntStateOf(0) }
+    var currentQuestion by rememberSaveable { mutableIntStateOf(0) }
+    var showLeaveDialog by rememberSaveable { mutableStateOf(false) }
     val thisQuestion = questionUiState[currentQuestion]
+
+    BackHandler { showLeaveDialog = true }
+
+    ConfirmLeaveDialog(
+        visible = showLeaveDialog,
+        onDismiss = { showLeaveDialog = false },
+        onConfirm = {
+            showLeaveDialog = false
+            navController.popBackStack()
+        }
+    )
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { showLeaveDialog = true }) {
                         Icon(Icons.Filled.Close, contentDescription = "Close")
                     }
                 },

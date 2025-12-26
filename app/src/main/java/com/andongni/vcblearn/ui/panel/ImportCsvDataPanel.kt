@@ -1,6 +1,7 @@
 package com.andongni.vcblearn.ui.panel
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
@@ -8,6 +9,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -20,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.CardDetail
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
+import com.andongni.vcblearn.ui.component.ConfirmLeaveDialog
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
 //region Preview
@@ -52,6 +57,7 @@ fun ImportCsvDataPanel(
     var customLineBreak by remember { mutableStateOf("") }
     var previewCardList by remember { mutableStateOf(listOf<CardDetail>()) }
     var examplePlaceholder by remember { mutableStateOf("W1 D1\nW2 D2") }
+    var showLeaveDialog by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(delimiter, customDelimiter, lineBreak, customLineBreak, inputData) {
         val delimiterChar = when (delimiter) {
@@ -71,6 +77,17 @@ fun ImportCsvDataPanel(
         previewCardList = viewModel.csvConvertCardList(inputData, delimiterChar, lineBreakChar)
     }
 
+    BackHandler { showLeaveDialog = true }
+
+    ConfirmLeaveDialog(
+        visible = showLeaveDialog,
+        onDismiss = { showLeaveDialog = false },
+        onConfirm = {
+            showLeaveDialog = false
+            navController.popBackStack()
+        }
+    )
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -78,7 +95,7 @@ fun ImportCsvDataPanel(
             TopAppBar(
                 title = { Text(stringResource(R.string.import_csv_data)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { showLeaveDialog = true }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },

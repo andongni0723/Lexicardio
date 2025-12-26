@@ -18,7 +18,7 @@
     <string name="learn">學習</string>
     <string name="test">測試</string>
     <string name="words">個單字</string>
-    <string name="cards">子卡</string>
+    <string name="cards">個字卡</string>
     <string name="create_card_set">建立卡組</string>
     <string name="title">標題</string>
     <string name="import_word">匯入</string>
@@ -37,7 +37,7 @@
     <string name="choose_answer">選擇答案</string>
     <string name="card_set">卡组</string>
     <string name="recent">最近</string>
-    <string name="tag">标记</string>
+    <string name="tag">標籤</string>
     <string name="folder">資料夾</string>
     <string name="confirm">確認</string>
     <string name="space">空格</string>
@@ -61,4 +61,11 @@
     <string name="export_text">匯出成文字</string>
     <string name="congrats">"恭喜你 "</string>
     <string name="user_done_study_content">你完成了這個卡组的學習。</string>
+    <string name="ok">知道了</string>
+    <string name="card_sets">個卡組</string>
+    <string name="you_have_learned_cards">你已經學了 %1$d 個字卡。</string>
+    <string name="you_have_learned_card_sets">你已經學了 %1$d 個卡組。</string>
+    <string name="leave_check">你確定要離開嗎？</string>
+    <string name="process_will_loss_hint">離開後不會保存進度</string>
+    <string name="cancel">取消</string>
 </resources>

@@ -37,7 +37,7 @@
     <string name="import_csv_data">导入 CSV</string>
     <string name="card_set">卡组</string>
     <string name="recent">最近</string>
-    <string name="tag">標籤</string>
+    <string name="tag">标记</string>
     <string name="folder">文件夹</string>
     <string name="confirm">确认</string>
     <string name="space">空白鍵</string>
@@ -61,4 +61,11 @@
     <string name="export_text">"导出文字 "</string>
     <string name="congrats">"恭喜你 "</string>
     <string name="user_done_study_content">" 你完成了这个卡组的学习。"</string>
+    <string name="ok">知道了</string>
+    <string name="card_sets">个卡组</string>
+    <string name="you_have_learned_cards">你已经学了 %1$d 张卡片。</string>
+    <string name="you_have_learned_card_sets">你已经学了 %1$d 个卡组。</string>
+    <string name="leave_check">你确定要离开吗？</string>
+    <string name="process_will_loss_hint">离开后不会保存进度。</string>
+    <string name="cancel">取消</string>
 </resources>

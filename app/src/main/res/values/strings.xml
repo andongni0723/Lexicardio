@@ -62,4 +62,11 @@
     <string name="export_text">Export Text</string>
     <string name="congrats">Congratulations</string>
     <string name="user_done_study_content">You complete the study of this card set.</string>
+    <string name="ok">Ok</string>
+    <string name="card_sets">Card Sets</string>
+    <string name="you_have_learned_cards">You have learned %1$d cards.</string>
+    <string name="you_have_learned_card_sets">You have learned %1$d card sets.</string>
+    <string name="leave_check">Are you sure you want to leave?</string>
+    <string name="process_will_loss_hint">Your progress won’t be saved after you leave.</string>
+    <string name="cancel">Cancel</string>
 </resources>

@@ -2,7 +2,7 @@ package com.andongni.vcblearn.ui.panel.setting
 
 
 import android.app.Activity
-import android.content.*
+import android.content.Intent
 import androidx.activity.compose.*
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree
 import androidx.compose.foundation.clickable
@@ -22,11 +22,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
-import com.andongni.vcblearn.data.SettingFieldData
-import com.andongni.vcblearn.data.SettingPanelViewModel
+import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
 //region Preview
@@ -50,7 +50,7 @@ fun SettingPanel(
     viewModel: SettingPanelViewModel = hiltViewModel(),
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val fieldList by viewModel.fields.collectAsState()
+    val fieldList by viewModel.fields.collectAsStateWithLifecycle()
     var userData by rememberSaveable {
         mutableStateOf<Map<String, String>>(mapOf("path" to "No Data"))
     }

@@ -1,6 +1,7 @@
 package com.andongni.vcblearn.ui.panel
 
 import android.content.res.Resources
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
@@ -25,12 +26,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
+import com.andongni.vcblearn.ui.component.ConfirmLeaveDialog
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -59,14 +62,15 @@ fun CreateCardSetScreen(
 ) {
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val cards by viewModel.cards.collectAsState()
+    val cards by viewModel.cards.collectAsStateWithLifecycle()
+    var showLeaveDialog by rememberSaveable { mutableStateOf(false) }
     var setName by rememberSaveable { mutableStateOf("") }
 
     val importedCards =
         navController.currentBackStackEntry
             ?.savedStateHandle
             ?.getStateFlow<List<CardDetail>?>("importCards", null)
-            ?.collectAsState(null)
+            ?.collectAsStateWithLifecycle(null)
 
     LaunchedEffect(importedCards?.value) {
         importedCards?.value?.let { list ->
@@ -79,13 +83,24 @@ fun CreateCardSetScreen(
         }
     }
 
+    BackHandler { showLeaveDialog = true }
+
+    ConfirmLeaveDialog(
+        visible = showLeaveDialog,
+        onDismiss = { showLeaveDialog = false },
+        onConfirm = {
+            showLeaveDialog = false
+            navController.popBackStack()
+        }
+    )
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.create_card_set)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { showLeaveDialog = true }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },

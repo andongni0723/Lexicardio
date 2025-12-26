@@ -1,38 +1,20 @@
 package com.andongni.vcblearn.ui.component
 
 import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.*
+import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.andongni.vcblearn.data.DataManagerModel
-import com.andongni.vcblearn.data.FolderEntry
-import com.andongni.vcblearn.data.JsonEntry
-import com.andongni.vcblearn.route.NavRoute
-import com.andongni.vcblearn.route.encodeBase64Uri
+import com.andongni.vcblearn.data.*
+import com.andongni.vcblearn.route.*
 import kotlinx.coroutines.launch
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -42,8 +24,8 @@ fun FolderButtonGroup(
     navController: NavController,
     viewModel: DataManagerModel = hiltViewModel()
 ) {
-    val folderList by viewModel.folders.collectAsState()
-    val refreshing by viewModel.isFoldersRefreshing.collectAsState()
+    val folderList by viewModel.folders.collectAsStateWithLifecycle()
+    val refreshing by viewModel.isFoldersRefreshing.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
     PullToRefreshBox(
@@ -86,8 +68,8 @@ fun CardSetGroup(
             viewModel.getCardSetInFolder(folderUri)
     }
 
-    val cardSetList by targetFlow.collectAsState()
-    val refreshing by viewModel.isJsonRefreshing.collectAsState()
+    val cardSetList by targetFlow.collectAsStateWithLifecycle()
+    val refreshing by viewModel.isJsonRefreshing.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
     PullToRefreshBox(

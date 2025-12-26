@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.LexicardioNavGraph
@@ -46,7 +47,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val themeMode by repo.theme.collectAsState("dark")
+            val themeMode by repo.theme.collectAsStateWithLifecycle("dark")
             val dynamic = themeMode == "dynamic"
             LexicardioTheme(themeMode) {
                 LexicardioNavGraph()
@@ -148,7 +149,32 @@ fun MyApp(navController: NavController) {
 }
 
 @Composable
-fun Home(navController: NavController) {
+fun Home (
+    navController: NavController,
+    viewModel: StatsViewModel = hiltViewModel()
+) {
+    val learnedCards by viewModel.learnedCards.collectAsStateWithLifecycle(initialValue = 0)
+    val learnedCardSets by viewModel.learnedCardSets.collectAsStateWithLifecycle(initialValue = 0)
+
+    var learnedCardsDialog by remember { mutableStateOf(false) }
+    var learnedCardSetsDialog by remember { mutableStateOf(false) }
+
+    BasicDialog(
+        visible = learnedCardsDialog,
+        title = stringResource(R.string.achievement),
+        text = stringResource(R.string.you_have_learned_cards, learnedCards),
+        buttonText = stringResource(R.string.ok),
+        onDismiss = { learnedCardsDialog = false }
+    ) { learnedCardsDialog = false }
+
+    BasicDialog(
+        visible = learnedCardSetsDialog,
+        title = stringResource(R.string.achievement),
+        text = stringResource(R.string.you_have_learned_card_sets, learnedCardSets),
+        buttonText = stringResource(R.string.ok),
+        onDismiss = { learnedCardSetsDialog = false }
+    ) { learnedCardSetsDialog = false }
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -227,8 +253,9 @@ fun Home(navController: NavController) {
                         .padding(vertical = 30.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // Learned Cards
                     FilledIconButton(
-                        onClick = {},
+                        onClick = { learnedCardsDialog = true },
                         modifier = Modifier
                             .size(200.dp, 100.dp)
                             .graphicsLayer(rotationZ = -5f),
@@ -238,11 +265,12 @@ fun Home(navController: NavController) {
                             contentColor = MaterialTheme.colorScheme.onSecondary,
                         )
                     ) {
-                        Text("342", style = MaterialTheme.typography.displayMedium)
+                        Text(learnedCards.toString(), style = MaterialTheme.typography.displayMedium)
                     }
 
+                    // Learned Card Sets
                     FilledIconButton(
-                        onClick = {},
+                        onClick = { learnedCardSetsDialog = true },
                         modifier = Modifier
                             .size(200.dp, 100.dp)
                             .align(Alignment.End)
@@ -253,7 +281,7 @@ fun Home(navController: NavController) {
                             contentColor = MaterialTheme.colorScheme.onSecondary,
                         )
                     ) {
-                        Text("20", style = MaterialTheme.typography.displayMedium)
+                        Text(learnedCardSets.toString(), style = MaterialTheme.typography.displayMedium)
                     }
                 }
             }
@@ -269,7 +297,7 @@ fun Library(
     viewModel: DataManagerModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val folderUri by viewModel.userFolder.collectAsState(null)
+    val folderUri by viewModel.userFolder.collectAsStateWithLifecycle(null)
 
     Column(
         modifier = Modifier

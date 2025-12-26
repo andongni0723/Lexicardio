@@ -20,6 +20,10 @@ val TEST_TRUE_FALSE = booleanPreferencesKey("test_true_false")
 val TEST_MULTI = booleanPreferencesKey("test_multi")
 val TEST_WRITTEN = booleanPreferencesKey("test_written")
 
+// Achievement
+val LEARNED_CARDS_COUNT = intPreferencesKey("learned_cards_count")
+val LEARNED_CARD_SETS_COUNT = intPreferencesKey("learned_card_sets_count")
+
 object UserPrefsDataStore {
     fun folderFlow(context: Context): Flow<String> =
         context.dataStore.data.map { it[USER_FOLDER] ?: "No Data" }
@@ -41,6 +45,12 @@ object UserPrefsDataStore {
             )
         }
 
+    fun learnedCardsCountFlow(context: Context): Flow<Int> =
+        context.dataStore.data.map { it[LEARNED_CARDS_COUNT] ?: 0 }
+
+    fun learnedCardSetsCountFlow(context: Context): Flow<Int> =
+        context.dataStore.data.map { it[LEARNED_CARD_SETS_COUNT] ?: 0 }
+
     suspend fun saveFolder(context: Context, path: String) {
         context.dataStore.edit { it[USER_FOLDER] = path }
     }
@@ -60,6 +70,20 @@ object UserPrefsDataStore {
             prefs[TEST_TRUE_FALSE] = data.trueFalseMode
             prefs[TEST_MULTI] = data.multipleChoiceMode
             prefs[TEST_WRITTEN] = data.writtenMode
+        }
+    }
+
+    suspend fun addLearnCardsCount(context: Context, amount: Int) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[LEARNED_CARDS_COUNT] ?: 0
+            prefs[LEARNED_CARDS_COUNT] = current + amount
+        }
+    }
+
+    suspend fun addLearnCardSetsCount(context: Context, amount: Int) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[LEARNED_CARD_SETS_COUNT] ?: 0
+            prefs[LEARNED_CARD_SETS_COUNT] = current + amount
         }
     }
 }

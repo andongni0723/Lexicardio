@@ -1,8 +1,8 @@
 package com.andongni.vcblearn.ui.panel.study
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -20,6 +20,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
+import com.andongni.vcblearn.ui.component.BasicDialog
+import com.andongni.vcblearn.ui.component.ConfirmLeaveDialog
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
 //region Preview
@@ -39,32 +41,61 @@ fun LearnModePanelPreview() {
 fun LearnModePanel(
     navController: NavController,
     settingDetail: LearnModelSettingDetail,
-    viewModel: LearnModeModel = hiltViewModel()
+    learnViewModel: LearnModeModel = hiltViewModel(),
+    statsViewModel: StatsViewModel = hiltViewModel()
 ) {
 
     var currentQuestion by rememberSaveable {
-        mutableStateOf<QuestionUiState>(viewModel.dummyQuestion().toUiState())
+        mutableStateOf<QuestionUiState>(learnViewModel.dummyQuestion().toUiState())
     }
     var showBatchEnd by rememberSaveable { mutableStateOf(false) }
+    var showLeaveDialog by rememberSaveable { mutableStateOf(false) }
     var batchCards by rememberSaveable { mutableStateOf(emptyList<CardDetail>()) }
     var isStudyEnd by rememberSaveable { mutableStateOf(false) }
     val thisBatchCards = remember { mutableStateListOf<CardDetail>() }
 
     LaunchedEffect(settingDetail) {
-        viewModel.initialize(settingDetail)
+        learnViewModel.initialize(settingDetail)
         showBatchEnd = false
         isStudyEnd = false
         batchCards = emptyList()
         thisBatchCards.clear()
-        currentQuestion = viewModel.getNextQuestion().toUiState()
+        currentQuestion = learnViewModel.getNextQuestion().toUiState()
     }
+
+    BackHandler {
+        showLeaveDialog = true
+    }
+
+    ConfirmLeaveDialog(
+        visible = showLeaveDialog,
+        onDismiss = { showLeaveDialog = false },
+        onConfirm = {
+            showLeaveDialog = false
+            navController.popBackStack()
+        }
+    )
+
+    fun leaveLearnModeAndUpdateStats() {
+        statsViewModel.addLearnedCards(settingDetail.cardSetJson.cards.size)
+        statsViewModel.addLearnedCardSets(1)
+        navController.popBackStack()
+    }
+
+    BasicDialog(
+        visible = isStudyEnd,
+        title = stringResource(R.string.congrats),
+        text = stringResource(R.string.user_done_study_content),
+        buttonText = stringResource(R.string.ok),
+        onDismiss = { leaveLearnModeAndUpdateStats() },
+    ) { leaveLearnModeAndUpdateStats() }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { showLeaveDialog = true }) {
                         Icon(Icons.Filled.Close, contentDescription = "Close")
                     }
                 },
@@ -78,7 +109,7 @@ fun LearnModePanel(
     ) { inner ->
 
         val animatedProgress by animateFloatAsState(
-            targetValue = viewModel.progress.toFloat() / viewModel.maxProgress,
+            targetValue = learnViewModel.progress.toFloat() / learnViewModel.maxProgress,
             label = "Progress Animation"
         )
 
@@ -94,7 +125,7 @@ fun LearnModePanel(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(viewModel.progress.toString(), Modifier.weight(1f), textAlign = TextAlign.Left)
+                Text(learnViewModel.progress.toString(), Modifier.weight(1f), textAlign = TextAlign.Left)
                 LinearProgressIndicator(
                     progress = { animatedProgress },
                     modifier = Modifier
@@ -102,13 +133,13 @@ fun LearnModePanel(
                         .height(16.dp)
                 )
                 Text(
-                    viewModel.maxProgress.toString(),
+                    learnViewModel.maxProgress.toString(),
                     Modifier.weight(1f),
                     textAlign = TextAlign.End
                 )
             }
 
-            fun nextAction() = with(viewModel) {
+            fun nextAction() = with(learnViewModel) {
                 updateCardState(currentQuestion)
                 thisBatchCards += currentQuestion.data.cardDetail
 
@@ -135,7 +166,7 @@ fun LearnModePanel(
                     cards = batchCards,
                     onNext = {
                         showBatchEnd = false
-                        currentQuestion = viewModel.getNextQuestion().toUiState()
+                        currentQuestion = learnViewModel.getNextQuestion().toUiState()
                     }
                 )
             }
@@ -149,18 +180,6 @@ fun LearnModePanel(
                     onNext = { nextAction() }
                 )
             }
-        }
-
-        if (isStudyEnd) {
-            AlertDialog(
-                onDismissRequest = { navController.popBackStack() },
-                containerColor = MaterialTheme.colorScheme.background,
-                title = { Text(stringResource(R.string.congrats)) },
-                text = { Text(stringResource(R.string.user_done_study_content)) },
-                confirmButton = {
-                    TextButton(onClick = { navController.popBackStack() }) { Text("Ok") }
-                }
-            )
         }
     }
 }
