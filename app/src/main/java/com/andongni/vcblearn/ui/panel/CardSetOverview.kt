@@ -1,7 +1,9 @@
 package com.andongni.vcblearn.ui.panel
 
 import android.content.ClipData
+import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
@@ -13,13 +15,11 @@ import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.carousel.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
-import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
+import com.andongni.vcblearn.ui.component.TtsViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 import kotlinx.coroutines.launch
 
@@ -50,8 +51,10 @@ fun CardSetOverviewPanelPreview() {
 fun CardSetOverviewPanel(
     navController: NavController,
     cardSetData: JsonEntry = JsonEntry(),
-    viewModel: DataManagerModel = hiltViewModel()
+    viewModel: DataManagerModel = hiltViewModel(),
+    ttsViewModel: TtsViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val cardSetDetail by produceState<CardSetJson>(CardSetJson(), cardSetData.uri) {
         value = viewModel.getCardSetJsonDetail(cardSetData.uri)
@@ -79,6 +82,7 @@ fun CardSetOverviewPanel(
                         Icon(Icons.Filled.Folder, contentDescription = "Folder")
                     }
 
+                    // Other Setting
                     Box {
                         IconButton(onClick = { menuExpanded = true }) {
                             Icon(Icons.Filled.MoreHoriz, contentDescription = "More")
@@ -105,10 +109,34 @@ fun CardSetOverviewPanel(
                                     Icon(Icons.Filled.Download, contentDescription = "Export")
                                 }
                             )
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.edit_card_set)) },
+                                onClick = {
+                                    Toast.makeText(context, "Coming soon.", Toast.LENGTH_SHORT).show()
+                                    menuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Filled.Edit, contentDescription = "Edit")
+                                }
+                            )
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.delete_card_set),
+                                    color = MaterialTheme.colorScheme.error) },
+                                onClick = {
+                                    Toast.makeText(context, "Coming soon.", Toast.LENGTH_SHORT).show()
+                                    menuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Filled.Delete, contentDescription = "Delete",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            )
                         }
                     }
-
-
                 },
                 scrollBehavior = scrollBehavior
             )
@@ -220,7 +248,9 @@ fun CardSetOverviewPanel(
             items(
                 items = cardSetDetail.cards,
             ) { card ->
-                WordCard(card)
+                WordCard(card) {
+                    ttsViewModel.speak(card.word)
+                }
             }
         }
     }
@@ -242,8 +272,11 @@ fun WordCarousel(
         flingBehavior = CarouselDefaults.multiBrowseFlingBehavior(state),
         preferredItemWidth = 250.dp
     ) {  page ->
+
+        var flip by rememberSaveable { mutableStateOf(false) }
+
         Button(
-            onClick = {},
+            onClick = { flip = !flip },
             modifier = Modifier.maskClip(MaterialTheme.shapes.large),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
             shape = RoundedCornerShape(20.dp),
@@ -256,7 +289,7 @@ fun WordCarousel(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = cardList[page].word,
+                    text = if (flip) cardList[page].definition else cardList[page].word,
                     fontSize = 24.sp,
                     style = MaterialTheme.typography.headlineMedium
                 )
@@ -267,9 +300,12 @@ fun WordCarousel(
 }
 
 @Composable
-fun WordCard(card: CardDetail) {
+fun WordCard(card: CardDetail, onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier.fillMaxWidth().height(100.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,

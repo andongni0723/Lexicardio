@@ -174,6 +174,7 @@ fun LearnModePanel(
             if (!showBatchEnd) {
                 QuestionContent(
                     uiState = currentQuestion,
+                    answerType = settingDetail.answerType,
                     onStateChange = { newUI ->
                         currentQuestion = newUI
                     },

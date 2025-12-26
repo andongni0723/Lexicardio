@@ -69,4 +69,6 @@
     <string name="leave_check">Are you sure you want to leave?</string>
     <string name="process_will_loss_hint">Your progress won’t be saved after you leave.</string>
     <string name="cancel">Cancel</string>
+    <string name="edit_card_set">Edit Card Set</string>
+    <string name="delete_card_set">Delete Card Set</string>
 </resources>

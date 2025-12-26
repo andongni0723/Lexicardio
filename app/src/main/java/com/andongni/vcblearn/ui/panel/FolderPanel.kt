@@ -1,5 +1,7 @@
 package com.andongni.vcblearn.ui.panel
 
+import android.content.Intent
+import android.provider.DocumentsContract
 import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +49,7 @@ fun FolderPanel(
     folderData: FolderEntry = FolderEntry(),
     viewModel: DataManagerModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
@@ -58,10 +62,26 @@ fun FolderPanel(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = {
+                        folderData.uri.let { tree ->
+                            val docUri = DocumentsContract.buildDocumentUriUsingTree(
+                                tree,
+                                DocumentsContract.getTreeDocumentId(tree)
+                            )
+
+                            // Open File App to user data folder
+                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                setDataAndType(docUri, DocumentsContract.Document.MIME_TYPE_DIR)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                putExtra(DocumentsContract.EXTRA_INITIAL_URI, docUri)
+                            }
+                            runCatching { context.startActivity(intent) }
+                                .onFailure { return@IconButton }
+                        }
+                    }) {
                         Icon(Icons.Filled.Folder, contentDescription = "Folder")
                     }
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Filled.MoreHoriz, contentDescription = "More")
                     }
                 },

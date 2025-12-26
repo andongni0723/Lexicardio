@@ -68,4 +68,8 @@
     <string name="leave_check">你確定要離開嗎？</string>
     <string name="process_will_loss_hint">離開後不會保存進度</string>
     <string name="cancel">取消</string>
+    <string name="first_setting_title">"初次見面！在開始學習之前，我們需要先完成一些設定。 "</string>
+    <string name="first_setting_content">請到「設定」中的 「用戶資料路徑」，先選擇你的資料儲存資料夾；你的學習資料將會存放在這裡。</string>
+    <string name="edit_card_set">編輯卡組</string>
+    <string name="delete_card_set">刪除卡組</string>
 </resources>

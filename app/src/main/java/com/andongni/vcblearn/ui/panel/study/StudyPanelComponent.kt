@@ -18,14 +18,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
+import com.andongni.vcblearn.ui.component.TtsViewModel
 import com.andongni.vcblearn.ui.panel.WordCard
 import com.andongni.vcblearn.ui.theme.LightErrorColor
 
 @Composable
 fun QuestionContent(
     uiState: QuestionUiState,
+    answerType: AnswerType,
+    ttsViewModel: TtsViewModel = hiltViewModel(),
     onStateChange: (QuestionUiState) -> Unit = {},
     onNext: () -> Unit = {}
 ) {
@@ -64,7 +68,9 @@ fun QuestionContent(
                             else -> OptionUiState.None
                         },
                         enable = uiState.userAnswer == null,
-                        onClick = { onStateChange(next); }
+                        onClick = {
+                            onStateChange(next);
+                        }
                     )
                 }
             }
@@ -88,7 +94,11 @@ fun QuestionContent(
                             else -> OptionUiState.None
                         },
                         enable = uiState.selectedIndex == null,
-                        onClick = { onStateChange(next); }
+                        onClick = {
+                            onStateChange(next);
+                            if (answerType == AnswerType.Word)
+                                ttsViewModel.speak(uiState.data.options[uiState.data.correctIndex])
+                        }
                     )
                 }
             }
@@ -101,6 +111,8 @@ fun QuestionContent(
                     onDone = {
                         onStateChange(uiState.copy(userText = userInput.trim()))
                         userInput = ""
+                        if (answerType == AnswerType.Word)
+                            ttsViewModel.speak(uiState.data.correctText)
                     },
                     state = when(uiState.userText) {
                         "" -> OptionUiState.None
@@ -398,6 +410,7 @@ fun SegmentButtonGroupSetting(
 @Composable
 fun BatchEndContent(
     cards: List<CardDetail>,
+    ttsViewModel: TtsViewModel = hiltViewModel(),
     onNext: () -> Unit
 ) {
 
@@ -409,7 +422,7 @@ fun BatchEndContent(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(cards) { card ->
-                WordCard(card)
+                WordCard(card) { ttsViewModel.speak(card.word) }
             }
         }
 

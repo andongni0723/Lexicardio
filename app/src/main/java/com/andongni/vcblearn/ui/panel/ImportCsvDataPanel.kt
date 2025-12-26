@@ -88,7 +88,6 @@ fun ImportCsvDataPanel(
         }
     )
 
-
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {

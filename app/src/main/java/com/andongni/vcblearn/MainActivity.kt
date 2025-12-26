@@ -48,7 +48,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val themeMode by repo.theme.collectAsStateWithLifecycle("dark")
-            val dynamic = themeMode == "dynamic"
             LexicardioTheme(themeMode) {
                 LexicardioNavGraph()
             }

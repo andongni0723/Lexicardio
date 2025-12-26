@@ -121,6 +121,7 @@ fun TestModePanel(
 
             QuestionContent(
                 uiState = thisQuestion,
+                answerType = settingDetail.answerType,
                 onStateChange = { newUI ->
                     if (settingDetail.showAnswerImmediately)
                         changeState(newUI)

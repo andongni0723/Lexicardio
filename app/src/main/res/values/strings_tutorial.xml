@@ -1,0 +1,4 @@
+<resources>
+    <string name="first_setting_title">Welcome! Before you start learning, we need to set a few things up.</string>
+    <string name="first_setting_content">In Settings → User Data Path, please choose a data storage folder. This folder will be used to store your learning data.</string>
+</resources>
