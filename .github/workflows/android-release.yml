@@ -29,10 +29,19 @@ jobs:
           echo "VERSION_NAME=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
           echo "VERSION_CODE=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
 
-      - name: Build Debug APK (signed with debug keystore)
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/release.jks
+          echo "KEYSTORE_PATH=${{ github.workspace }}/release.jks" >> $GITHUB_ENV
+
+      - name: Build Release APK (signed)
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           ./gradlew :app:lint :app:test
-          ./gradlew :app:assembleDebug \
+          ./gradlew :app:assembleRelease \
             -PversionName=${{ env.VERSION_NAME }} \
             -PversionCode=${{ env.VERSION_CODE }}
 
@@ -42,4 +51,4 @@ jobs:
         run: |
           gh release create "${GITHUB_REF_NAME}" \
             --generate-notes \
-            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/release/*.apk
