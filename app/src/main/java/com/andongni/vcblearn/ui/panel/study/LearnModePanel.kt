@@ -52,6 +52,7 @@ fun LearnModePanel(
     var showLeaveDialog by rememberSaveable { mutableStateOf(false) }
     var batchCards by rememberSaveable { mutableStateOf(emptyList<CardDetail>()) }
     var isStudyEnd by rememberSaveable { mutableStateOf(false) }
+    var hasHandledStudyEnd by rememberSaveable { mutableStateOf(false) }
     val thisBatchCards = remember { mutableStateListOf<CardDetail>() }
 
     LaunchedEffect(settingDetail) {
@@ -77,9 +78,12 @@ fun LearnModePanel(
     )
 
     fun leaveLearnModeAndUpdateStats() {
-        statsViewModel.addLearnedCards(settingDetail.cardSetJson.cards.size)
-        statsViewModel.addLearnedCardSets(1)
-        navController.popBackStack()
+        if (!hasHandledStudyEnd) {
+            hasHandledStudyEnd = true
+            statsViewModel.addLearnedCards(settingDetail.cardSetJson.cards.size)
+            statsViewModel.addLearnedCardSets(1)
+            navController.popBackStack()
+        }
     }
 
     BasicDialog(
