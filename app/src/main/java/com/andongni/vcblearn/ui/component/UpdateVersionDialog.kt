@@ -1,6 +1,7 @@
 package com.andongni.vcblearn.ui.component
 
 import android.content.*
+import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.core.net.toUri
@@ -21,9 +22,10 @@ fun UpdateVersionDialog(
     var dialogVisible by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        val (tag, body) = fetchLatestReleaseTag()
-        latestTag = tag
-        latestBody = body
+        fetchLatestReleaseTag(context)?.let { (tag, body) ->
+            latestTag = tag
+            latestBody = body
+        }
     }
 
     val updateAvailable = latestTag?.let {
@@ -57,17 +59,30 @@ fun isUpdateAvailable(currentVersion: String, latestTag: String): Boolean {
     return compareVersion(current, latest) < 0
 }
 
-suspend fun fetchLatestReleaseTag(): Pair<String, String> = withContext(Dispatchers.IO) {
-    val url = URL("https://api.github.com/repos/andongni0723/lexicardio/releases/latest")
-    val conn = (url.openConnection() as HttpURLConnection).apply {
-        requestMethod = "GET"
-        setRequestProperty("Accept", "application/vnd.github+json")
-        setRequestProperty("User-Agent", "Lexicardio")
-        connectTimeout = 5000
-        readTimeout = 5000
-    }
-    conn.inputStream.bufferedReader().use { reader ->
-        val json = JSONObject(reader.readText())
-        json.getString("tag_name") to json.getString("body")
+suspend fun fetchLatestReleaseTag(
+    context: Context
+): Pair<String, String>? = withContext(Dispatchers.IO) {
+    try {
+        val url = URL("https://api.github.com/repos/andongni0723/lexicardio/releases/latest")
+        val conn = (url.openConnection() as HttpURLConnection).apply {
+            requestMethod = "GET"
+            setRequestProperty("Accept", "application/vnd.github+json")
+            setRequestProperty("User-Agent", "Lexicardio")
+            connectTimeout = 5000
+            readTimeout = 5000
+        }
+        conn.inputStream.bufferedReader().use { reader ->
+            val json = JSONObject(reader.readText())
+            json.getString("tag_name") to json.getString("body")
+        }
+    } catch (e: Exception) {
+        withContext(Dispatchers.Main) {
+            Toast.makeText(
+                context,
+                "Get latest release failed. Try again later.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        null
     }
 }
