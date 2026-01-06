@@ -17,8 +17,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,6 +32,8 @@ import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
+import com.andongni.vcblearn.utils.getAppName
+import com.andongni.vcblearn.utils.getAppVersion
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,6 +55,7 @@ fun SettingPanel(
     navController: NavController,
     viewModel: SettingPanelViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val fieldList by viewModel.fields.collectAsStateWithLifecycle()
     var userData by rememberSaveable {
@@ -105,6 +112,16 @@ fun SettingPanel(
                 key = { it.id }
             ) { field ->
                 when (field) {
+                    is SettingFieldData.Basic -> {
+                        SettingListItem(
+                            headline   = stringResource(field.label),
+                            supporting = field.current,
+                            icon       = field.icon,
+                            hasTrailingIcon = false,
+                            onClick    = {}
+                        )
+                    }
+
                     is SettingFieldData.Navigation -> {
                         SettingListItem(
                             headline   = stringResource(field.label),
@@ -156,6 +173,7 @@ private fun SettingListItem(
     headline: String,
     supporting: String = "",
     icon: ImageVector,
+    hasTrailingIcon: Boolean = true,
     onClick: () -> Unit
 ) {
     ListItem(
@@ -176,7 +194,7 @@ private fun SettingListItem(
             )
         },
         trailingContent = {
-            Icon(Icons.Filled.ChevronRight, contentDescription = null)
+            if (hasTrailingIcon) Icon(Icons.Filled.ChevronRight, contentDescription = null)
         },
         colors = ListItemDefaults.colors(
             containerColor = MaterialTheme.colorScheme.background,

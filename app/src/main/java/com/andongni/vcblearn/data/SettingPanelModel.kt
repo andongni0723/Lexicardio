@@ -1,13 +1,17 @@
 package com.andongni.vcblearn.data
 
 import android.app.Activity
+import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.*
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.locate.appLanguages
+import com.andongni.vcblearn.utils.getAppName
+import com.andongni.vcblearn.utils.getAppVersion
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,6 +20,14 @@ sealed class SettingFieldData {
     abstract val id: String
     abstract val label: Int
     abstract val icon: ImageVector
+
+    data class Basic(
+        override val id: String,
+        override val label: Int,
+        override val icon: ImageVector,
+        val current: String,
+        val onClick: () -> Unit
+    ) : SettingFieldData()
 
     data class Navigation(
         override val id: String,
@@ -53,12 +65,15 @@ sealed class SettingFieldData {
 @HiltViewModel
 open class SettingPanelViewModel @Inject constructor(
     private val repo: SettingsRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     val languageOptions = appLanguages.map { it.displayName }
     val languageCodes = appLanguages.map { it.code }
     val themeOptions = listOf("System", "Dark", "Light", "Material You")
     val themeCodes = listOf("system", "dark", "light", "dynamic")
+    val appName = getAppName(context)
+    val appVersion = getAppVersion(context, "v")
 
     val fields: StateFlow<List<SettingFieldData>> =
         combine(
@@ -101,7 +116,14 @@ open class SettingPanelViewModel @Inject constructor(
                             repo.saveLanguage(languageCodes[i], activity);
                         }
                     }
-                )
+                ),
+                SettingFieldData.Basic(
+                    id = "version",
+                    label = R.string.version,
+                    icon = Icons.Filled.Info,
+                    current = "$appName $appVersion",
+                    onClick = {}
+                ),
             )
         }
         .stateIn(

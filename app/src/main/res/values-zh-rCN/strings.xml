@@ -72,4 +72,5 @@
     <string name="first_setting_content">"初次见面！在开始学习之前，我们需要在设置中的「用户数据路径」里，请先指定数据存储目录，这里将用于保存你的学习资料。先设置一些内容。 "</string>
     <string name="edit_card_set">编辑卡组</string>
     <string name="delete_card_set">删除卡组</string>
+    <string name="version">版本</string>
 </resources>

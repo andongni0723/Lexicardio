@@ -36,6 +36,8 @@ fun ConfirmLeaveDialog(
     visible: Boolean,
     title: String = stringResource(R.string.leave_check),
     text: String = stringResource(R.string.process_will_loss_hint),
+    confirmText: String = stringResource(R.string.confirm),
+    dismissText: String = stringResource(R.string.cancel),
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
@@ -46,10 +48,10 @@ fun ConfirmLeaveDialog(
         text = { Text(text) },
         onDismissRequest = onDismiss,
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(onClick = onDismiss) { Text(dismissText) }
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text(stringResource(R.string.confirm)) }
+            TextButton(onClick = onConfirm) { Text(confirmText) }
         },
     )
 }

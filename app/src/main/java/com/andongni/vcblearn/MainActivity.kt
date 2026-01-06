@@ -71,6 +71,9 @@ fun MyApp(navController: NavController) {
     var addSheetShow by remember { mutableStateOf(false) }
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    UpdateVersionDialog(context);
 
     // Footer Nav Bar and Event Bottom Sheet
     Scaffold(

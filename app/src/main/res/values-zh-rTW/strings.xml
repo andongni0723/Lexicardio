@@ -72,4 +72,5 @@
     <string name="first_setting_content">請到「設定」中的 「用戶資料路徑」，先選擇你的資料儲存資料夾；你的學習資料將會存放在這裡。</string>
     <string name="edit_card_set">編輯卡組</string>
     <string name="delete_card_set">刪除卡組</string>
+    <string name="version">版本</string>
 </resources>

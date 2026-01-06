@@ -71,4 +71,5 @@
     <string name="cancel">Cancel</string>
     <string name="edit_card_set">Edit Card Set</string>
     <string name="delete_card_set">Delete Card Set</string>
+    <string name="version">Version</string>
 </resources>
