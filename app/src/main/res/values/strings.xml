@@ -72,4 +72,5 @@
     <string name="edit_card_set">Edit Card Set</string>
     <string name="delete_card_set">Delete Card Set</string>
     <string name="version">Version</string>
+    <string name="new_version_available">New version available</string>
 </resources>

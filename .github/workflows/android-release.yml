@@ -45,10 +45,17 @@ jobs:
             -PversionName=${{ env.VERSION_NAME }} \
             -PversionCode=${{ env.VERSION_CODE }}
 
-      - name: Create GitHub Release (auto notes) + upload APK
+      - name: Create GitHub Release (changelog for tag) + upload APK
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          NOTES=$(awk -v ver="${GITHUB_REF_NAME}" '
+            BEGIN { found=0 }
+            $0 ~ "^##[[:space:]]*" ver "$" { found=1; next }
+            $0 ~ "^##[[:space:]]+v" { if (found) exit }
+            found { print }
+          ' CHANGELOG.md)
           gh release create "${GITHUB_REF_NAME}" \
-            --generate-notes \
+            --title "${GITHUB_REF_NAME}" \
+            --notes "$NOTES" \
             app/build/outputs/apk/release/*.apk

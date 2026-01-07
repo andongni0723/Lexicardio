@@ -73,4 +73,5 @@
     <string name="edit_card_set">編輯卡組</string>
     <string name="delete_card_set">刪除卡組</string>
     <string name="version">版本</string>
+    <string name="new_version_available">發現新版本</string>
 </resources>

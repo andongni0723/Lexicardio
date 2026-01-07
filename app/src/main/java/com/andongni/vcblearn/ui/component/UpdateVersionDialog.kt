@@ -4,14 +4,13 @@ import android.content.*
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
-import com.andongni.vcblearn.utils.compareVersion
-import com.andongni.vcblearn.utils.getAppVersion
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.andongni.vcblearn.R
+import com.andongni.vcblearn.utils.*
+import kotlinx.coroutines.*
 import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
+import java.net.*
 
 @Composable
 fun UpdateVersionDialog(
@@ -39,8 +38,8 @@ fun UpdateVersionDialog(
     if (!dialogVisible) return
 
     ConfirmLeaveDialog(
-        title = "發現新版本 $latestTag",
-        text = "Version $latestTag\n$latestBody",
+        title = " ${stringResource(R.string.new_version_available)} $latestTag",
+        text = latestBody.toString(),
         visible = true,
         confirmText = "去更新",
         dismissText = "下次再說",
