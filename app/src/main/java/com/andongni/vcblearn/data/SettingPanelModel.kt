@@ -72,6 +72,7 @@ open class SettingPanelViewModel @Inject constructor(
     val languageCodes = appLanguages.map { it.code }
     val themeOptions = listOf("System", "Dark", "Light", "Material You")
     val themeCodes = listOf("system", "dark", "light", "dynamic")
+    val dailyLearningGoal = repo.dailyLearningGoal
     val appName = getAppName(context)
     val appVersion = getAppVersion(context, "v")
 
@@ -114,6 +115,17 @@ open class SettingPanelViewModel @Inject constructor(
                     onSelect = { activity, i  ->
                         viewModelScope.launch {
                             repo.saveLanguage(languageCodes[i], activity);
+                        }
+                    }
+                ),
+                SettingFieldData.TextField(
+                    id = "target_learned_cards_per_day",
+                    label = R.string.daily_learning_goal,
+                    icon = Icons.Filled.TrackChanges,
+                    value = dailyLearningGoal.first().toString(),
+                    onValueChange = {
+                        viewModelScope.launch {
+                            repo.saveDailyLearningGoal(it.toInt())
                         }
                     }
                 ),

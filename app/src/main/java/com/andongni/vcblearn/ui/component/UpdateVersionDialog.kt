@@ -14,7 +14,8 @@ import java.net.*
 
 @Composable
 fun UpdateVersionDialog(
-    context: Context
+    context: Context,
+    onDismiss: () -> Unit = {}
 ){
     var latestTag by remember { mutableStateOf<String?>(null) }
     var latestBody by remember { mutableStateOf<String?>(null) }
@@ -41,9 +42,9 @@ fun UpdateVersionDialog(
         title = " ${stringResource(R.string.new_version_available)} $latestTag",
         text = latestBody.toString(),
         visible = true,
-        confirmText = "去更新",
-        dismissText = "下次再說",
-        onDismiss = { dialogVisible = false },
+        confirmText = stringResource(R.string.update_now),
+        dismissText = stringResource(R.string.maybe_later),
+        onDismiss = onDismiss,
         onConfirm = {
             val intent = Intent(Intent.ACTION_VIEW,
                 "https://github.com/andongni0723/lexicardio/releases/latest".toUri())

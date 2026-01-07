@@ -74,4 +74,7 @@
     <string name="delete_card_set">刪除卡組</string>
     <string name="version">版本</string>
     <string name="new_version_available">發現新版本</string>
+    <string name="daily_learning_goal">每日學習目標</string>
+    <string name="update_now">去更新</string>
+    <string name="maybe_later">下次再說</string>
 </resources>

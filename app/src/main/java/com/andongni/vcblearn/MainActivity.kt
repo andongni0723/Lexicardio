@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import androidx.activity.*
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.*
@@ -16,6 +17,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.*
@@ -32,6 +34,7 @@ import com.andongni.vcblearn.ui.theme.LexicardioTheme
 import dagger.hilt.*
 import dagger.hilt.android.*
 import dagger.hilt.components.SingletonComponent
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -45,6 +48,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        lifecycleScope.launch {
+            repo.checkAndResetTodayLearnedCardsCount()
+        }
 
         setContent {
             val themeMode by repo.theme.collectAsStateWithLifecycle("dark")
@@ -69,11 +76,13 @@ fun MyApp(navController: NavController) {
     var currentScreen by rememberSaveable { mutableStateOf(Screen.Home) }
     val addSheetState = rememberModalBottomSheetState()
     var addSheetShow by remember { mutableStateOf(false) }
+    var dialogVisible by rememberSaveable { mutableStateOf(true) }
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    UpdateVersionDialog(context);
+    if (dialogVisible)
+        UpdateVersionDialog(context, onDismiss = { dialogVisible = false });
 
     // Footer Nav Bar and Event Bottom Sheet
     Scaffold(
@@ -153,10 +162,21 @@ fun MyApp(navController: NavController) {
 @Composable
 fun Home (
     navController: NavController,
-    viewModel: StatsViewModel = hiltViewModel()
+    statsViewModel: StatsViewModel = hiltViewModel(),
+    todayStatsViewModel: TodayStatsViewModel = hiltViewModel()
 ) {
-    val learnedCards by viewModel.learnedCards.collectAsStateWithLifecycle(initialValue = 0)
-    val learnedCardSets by viewModel.learnedCardSets.collectAsStateWithLifecycle(initialValue = 0)
+    val learnedCards by statsViewModel.learnedCards.collectAsStateWithLifecycle(0)
+    val learnedCardSets by statsViewModel.learnedCardSets.collectAsStateWithLifecycle(0)
+    val todayLearnedCardsCount by todayStatsViewModel.todayLearnedCardsCount.collectAsStateWithLifecycle(0)
+    val dailyLearningGoal by todayStatsViewModel.dailyLearningGoal.collectAsStateWithLifecycle(25)
+
+    val todayLearnedProgress by remember(todayLearnedCardsCount, dailyLearningGoal) {
+        derivedStateOf {
+            if (dailyLearningGoal <= 0) 0f
+            else (todayLearnedCardsCount.toFloat() / dailyLearningGoal.toFloat())
+                .coerceIn(0f, 1f)
+        }
+    }
 
     var learnedCardsDialog by remember { mutableStateOf(false) }
     var learnedCardSetsDialog by remember { mutableStateOf(false) }
@@ -195,24 +215,25 @@ fun Home (
                     style = MaterialTheme.typography.headlineMedium)
 
                 LinearProgressIndicator(
-                    progress = { 0.8f },
+                    progress = { todayLearnedProgress },
                     modifier = Modifier.fillMaxWidth().height(80.dp).padding(vertical = 20.dp)
                 )
                 // Progress Bar
                 Row(Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 20.dp),
+                    .padding(vertical = 20.dp)
+                    .clickable { learnedCardsDialog = true },
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.Bottom
                 ) {
                     Text(
-                        "20",
+                        todayLearnedCardsCount.toString(),
                         style = MaterialTheme.typography.displayLarge,
                         modifier = Modifier.alignByBaseline(),
                     )
 
                     Text(
-                        " /25",
+                        " /$dailyLearningGoal",
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         style = MaterialTheme.typography.displaySmall,
                         modifier = Modifier.alignByBaseline()
@@ -417,4 +438,3 @@ fun CardSetPage(navController: NavController) {
         CardSetGroup(navController)
     }
 }
-
