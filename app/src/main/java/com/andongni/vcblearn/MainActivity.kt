@@ -36,6 +36,7 @@ import dagger.hilt.android.*
 import dagger.hilt.components.SingletonComponent
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -169,7 +170,6 @@ fun Home (
     val learnedCardSets by statsViewModel.learnedCardSets.collectAsStateWithLifecycle(0)
     val todayLearnedCardsCount by todayStatsViewModel.todayLearnedCardsCount.collectAsStateWithLifecycle(0)
     val dailyLearningGoal by todayStatsViewModel.dailyLearningGoal.collectAsStateWithLifecycle(25)
-
     val todayLearnedProgress by remember(todayLearnedCardsCount, dailyLearningGoal) {
         derivedStateOf {
             if (dailyLearningGoal <= 0) 0f
@@ -180,7 +180,7 @@ fun Home (
 
     var learnedCardsDialog by remember { mutableStateOf(false) }
     var learnedCardSetsDialog by remember { mutableStateOf(false) }
-
+    var todayProcessDialog by remember { mutableStateOf(false) }
     BasicDialog(
         visible = learnedCardsDialog,
         title = stringResource(R.string.achievement),
@@ -196,6 +196,15 @@ fun Home (
         buttonText = stringResource(R.string.ok),
         onDismiss = { learnedCardSetsDialog = false }
     ) { learnedCardSetsDialog = false }
+
+    BasicDialog(
+        visible = todayProcessDialog,
+        title = stringResource(R.string.today_learn),
+        text = stringResource(R.string.today_progress_percent,
+            (todayLearnedProgress * 100).roundToInt()),
+        buttonText = stringResource(R.string.ok),
+        onDismiss = { todayProcessDialog = false }
+    ) { todayProcessDialog = false }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -222,7 +231,7 @@ fun Home (
                 Row(Modifier
                     .fillMaxWidth()
                     .padding(vertical = 20.dp)
-                    .clickable { learnedCardsDialog = true },
+                    .clickable { todayProcessDialog = true },
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.Bottom
                 ) {

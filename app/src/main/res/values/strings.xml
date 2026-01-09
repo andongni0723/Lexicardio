@@ -76,4 +76,5 @@
     <string name="daily_learning_goal">Daily Learning Goal</string>
     <string name="update_now">Update now</string>
     <string name="maybe_later">Maybe Later</string>
+    <string name="today_progress_percent">You’ve completed %1$d%% of today’s progress.</string>
 </resources>

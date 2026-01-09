@@ -77,4 +77,5 @@
     <string name="daily_learning_goal">每日學習目標</string>
     <string name="update_now">去更新</string>
     <string name="maybe_later">下次再說</string>
+    <string name="today_progress_percent">你已完成今日 %1$d%% 的進度</string>
 </resources>

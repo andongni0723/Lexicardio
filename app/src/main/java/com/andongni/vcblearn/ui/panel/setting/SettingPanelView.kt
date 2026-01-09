@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
@@ -240,40 +241,30 @@ private fun DropdownSettingFieldDialog(
 ) {
     val (selectedOption, onSelected) = remember { mutableStateOf(currentSelected) }
 
-    BasicAlertDialog(
+    AlertDialog(
         onDismissRequest = onDismissRequest,
-    ) {
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.background,
-        ) {
-            Column(
-                Modifier.height(380.dp),
+        confirmButton = {
+            TextButton(
+                onClick = { onDismissRequest() }
             ) {
-                Text(
-                    title,
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 24.dp, start = 24.dp)
-                        .weight(1f),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                        .background(Color.Transparent),
-                    thickness = 1.dp,
-                )
+                Text(stringResource(R.string.confirm), color = MaterialTheme.colorScheme.primary)
+            }
+        },
+        title = {
+            Text(title)
+        },
+        text = {
+            Column(
+                Modifier.height(185.dp),
+            ) {
+                HorizontalDivider(thickness = 2.dp)
 
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 16.dp)
                         .weight(2.5f)
                         .selectableGroup(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
 
                     items(fields) { option ->
@@ -282,13 +273,13 @@ private fun DropdownSettingFieldDialog(
                                 .fillMaxWidth()
                                 .selectable(
                                     selected = (option == selectedOption),
-                                    onClick = { onOptionSelected(option); onSelected(option);}
+                                    onClick = { onOptionSelected(option); onSelected(option); }
                                 ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
                                 selected = (option == selectedOption),
-                                onClick = { onOptionSelected(option); onSelected(option);}
+                                onClick = { onOptionSelected(option); onSelected(option); }
                             )
                             Spacer(Modifier.width(20.dp))
                             Text(option)
@@ -296,27 +287,10 @@ private fun DropdownSettingFieldDialog(
                     }
                 }
 
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-
-                Row(
-                    Modifier.fillMaxWidth().padding(24.dp).weight(1f),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    TextButton(
-                        onClick = { onDismissRequest() }
-                    ) {
-                        Text(stringResource(R.string.confirm), color = MaterialTheme.colorScheme.primary)
-                    }
-                }
+                HorizontalDivider(thickness = 2.dp)
             }
         }
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
