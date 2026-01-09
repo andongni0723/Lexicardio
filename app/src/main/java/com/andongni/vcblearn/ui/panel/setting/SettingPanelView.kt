@@ -5,8 +5,10 @@ import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.*
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.selection.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,12 +19,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,8 +35,6 @@ import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
-import com.andongni.vcblearn.utils.getAppName
-import com.andongni.vcblearn.utils.getAppVersion
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +75,7 @@ fun SettingPanel(
     }
 
     // Dialog
-    var activeDialog by remember { mutableStateOf<SettingFieldData.Dropdown?>(null) }
+    var activeDialog by remember { mutableStateOf<SettingFieldData?>(null) }
 
     Scaffold(
         topBar = {
@@ -149,6 +150,15 @@ fun SettingPanel(
                         )
                     }
 
+                    is SettingFieldData.Slider -> {
+                        SettingListItem(
+                            headline = stringResource(field.label),
+                            supporting = field.value,
+                            icon = field.icon,
+                            onClick = { activeDialog = field }
+                        )
+                    }
+
                     is SettingFieldData.Switch -> {}
                 }
             }
@@ -156,15 +166,32 @@ fun SettingPanel(
     }
 
     activeDialog?.let { field ->
-        SettingFieldDialog(
-            onDismissRequest = { activeDialog = null },
-            title = stringResource(field.label),
-            fields = field.options,
-            currentSelected = field.options[field.selectedIndex],
-            onOptionSelected = { option ->
-                field.onSelect(activity, field.options.indexOf(option))
+        when (field) {
+            is SettingFieldData.Dropdown -> {
+                DropdownSettingFieldDialog(
+                    onDismissRequest = { activeDialog = null },
+                    title = stringResource(field.label),
+                    fields = field.options,
+                    currentSelected = field.options[field.selectedIndex],
+                    onOptionSelected = { option ->
+                        field.onSelect(activity, field.options.indexOf(option))
+                    }
+                )
             }
-        )
+
+            is SettingFieldData.Slider -> {
+                SliderSettingFieldDialog(
+                    onDismissRequest = { activeDialog = null },
+                    title = stringResource(field.label),
+                    range = field.range,
+                    currentValue = field.value.toInt(),
+                    step = field.step,
+                    onValueChangeFinished = { field.onValueChangeFinished(it)}
+                )
+            }
+
+            else -> {}
+        }
     }
 }
 
@@ -204,7 +231,7 @@ private fun SettingListItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingFieldDialog(
+private fun DropdownSettingFieldDialog(
     onDismissRequest: () -> Unit,
     title: String,
     fields: List<String>,
@@ -232,7 +259,13 @@ private fun SettingFieldDialog(
                     style = MaterialTheme.typography.headlineSmall
                 )
 
-                HorizontalDivider(Modifier.fillMaxWidth())
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .background(Color.Transparent),
+                    thickness = 1.dp,
+                )
 
                 LazyColumn(
                     modifier = Modifier
@@ -240,7 +273,7 @@ private fun SettingFieldDialog(
                         .padding(horizontal = 12.dp, vertical = 16.dp)
                         .weight(2.5f)
                         .selectableGroup(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
 
                     items(fields) { option ->
@@ -263,7 +296,13 @@ private fun SettingFieldDialog(
                     }
                 }
 
-                HorizontalDivider(Modifier.fillMaxWidth())
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
 
                 Row(
                     Modifier.fillMaxWidth().padding(24.dp).weight(1f),
@@ -278,4 +317,61 @@ private fun SettingFieldDialog(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SliderSettingFieldDialog(
+    onDismissRequest: () -> Unit,
+    title: String,
+    range: ClosedFloatingPointRange<Float>,
+    currentValue: Int,
+    step: Int = 0,
+    onValueChangeFinished: (Int) -> Unit = {}
+) {
+    var newValue by rememberSaveable { mutableIntStateOf(currentValue) }
+    val steps = if (step <= 0) {
+        0
+    } else {
+        val rangeSize = range.endInclusive - range.start
+        ((rangeSize / step) - 1).toInt().coerceAtLeast(0)
+    }
+
+    AlertDialog(
+        title = { Text(title) },
+        text = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Slider(
+                    modifier = Modifier.weight(1f),
+                    value = newValue.toFloat(),
+                    onValueChange = {
+                        newValue = it.toInt()
+                    },
+                    onValueChangeFinished = { onValueChangeFinished(newValue.toInt()) },
+                    valueRange = range,
+                    steps = steps,
+                )
+                Text(
+                    modifier = Modifier.widthIn(min = 56.dp),
+                    text = newValue.toString(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.End
+                )
+            }
+        },
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                onClick = { onDismissRequest() }
+            ) {
+                Text(stringResource(R.string.confirm), color = MaterialTheme.colorScheme.primary)
+            }
+        },
+    )
 }

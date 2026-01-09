@@ -54,6 +54,16 @@ sealed class SettingFieldData {
         val onValueChange: (String) -> Unit
     ) : SettingFieldData()
 
+    data class Slider(
+        override val id: String,
+        override val label: Int,
+        override val icon: ImageVector,
+        val range: ClosedFloatingPointRange<Float>,
+        val value: String,
+        val step: Int = 0,
+        val onValueChangeFinished: (Int) -> Unit
+    ) : SettingFieldData()
+
     data class Switch(
         override val id: String,
         override val label: Int,
@@ -118,12 +128,14 @@ open class SettingPanelViewModel @Inject constructor(
                         }
                     }
                 ),
-                SettingFieldData.TextField(
+                SettingFieldData.Slider(
                     id = "target_learned_cards_per_day",
                     label = R.string.daily_learning_goal,
                     icon = Icons.Filled.TrackChanges,
                     value = dailyLearningGoal.first().toString(),
-                    onValueChange = {
+                    range = 5f..100f,
+                    step = 5,
+                    onValueChangeFinished = {
                         viewModelScope.launch {
                             repo.saveDailyLearningGoal(it.toInt())
                         }
