@@ -24,7 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.CardDetail
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
-import com.andongni.vcblearn.ui.component.ConfirmLeaveDialog
+import com.andongni.vcblearn.utils.ConfirmLeaveDialog
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
 //region Preview

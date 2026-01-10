@@ -70,7 +70,6 @@ fun LexicardioTheme(
         colorScheme = colorScheme,
         typography = AppTypography,
     ) {
-
         content()
     }
 }

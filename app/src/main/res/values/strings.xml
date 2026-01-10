@@ -72,7 +72,7 @@
     <string name="edit_card_set">Edit Card Set</string>
     <string name="delete_card_set">Delete Card Set</string>
     <string name="version">Version</string>
-    <string name="new_version_available">New version available</string>
+    <string name="new_version_available">New version</string>
     <string name="daily_learning_goal">Daily Learning Goal</string>
     <string name="update_now">Update now</string>
     <string name="maybe_later">Maybe Later</string>

@@ -3,7 +3,7 @@ package com.andongni.vcblearn.utils
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.annotation.RequiresApi
+import java.util.Locale
 
 fun getAppVersion(context: Context, begin: String = ""): String {
     return try {
@@ -36,3 +36,6 @@ fun compareVersion(a: String, b: String): Int {
     }
     return 0
 }
+
+fun bytesToMiB(bytes: Int): String =
+    String.format(Locale.US, "%.2f", bytes / (1024.0 * 1024.0))

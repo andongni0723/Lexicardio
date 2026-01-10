@@ -55,6 +55,7 @@ jobs:
             $0 ~ "^##[[:space:]]+v" { if (found) exit }
             found { print }
           ' CHANGELOG.md)
+          mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/lexicardio_${{ env.VERSION_NAME }}_release.apk
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
             --notes "$NOTES" \

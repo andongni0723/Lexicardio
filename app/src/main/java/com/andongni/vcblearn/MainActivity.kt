@@ -35,6 +35,7 @@ import dagger.hilt.*
 import dagger.hilt.android.*
 import dagger.hilt.components.SingletonComponent
 import androidx.lifecycle.lifecycleScope
+import com.andongni.vcblearn.utils.BasicDialog
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -200,8 +201,10 @@ fun Home (
     BasicDialog(
         visible = todayProcessDialog,
         title = stringResource(R.string.today_learn),
-        text = stringResource(R.string.today_progress_percent,
-            (todayLearnedProgress * 100).roundToInt()),
+        text = stringResource(
+            R.string.today_progress_percent,
+            (todayLearnedProgress * 100).roundToInt()
+        ),
         buttonText = stringResource(R.string.ok),
         onDismiss = { todayProcessDialog = false }
     ) { todayProcessDialog = false }
