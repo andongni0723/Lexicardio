@@ -84,7 +84,7 @@ fun MyApp(navController: NavController) {
     val context = LocalContext.current
 
     if (dialogVisible)
-        UpdateVersionDialog(context, onDismiss = { dialogVisible = false })
+        UpdateVersionBottomSheet(context, onDismiss = { dialogVisible = false })
 
     // Footer Nav Bar and Event Bottom Sheet
     Scaffold(

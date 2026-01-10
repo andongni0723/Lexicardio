@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.*
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.locate.appLanguages
-import com.andongni.vcblearn.utils.getAppName
 import com.andongni.vcblearn.utils.getAppVersion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -83,7 +82,6 @@ open class SettingPanelViewModel @Inject constructor(
     val themeOptions = listOf("System", "Dark", "Light", "Material You")
     val themeCodes = listOf("system", "dark", "light", "dynamic")
     val dailyLearningGoal = repo.dailyLearningGoal
-    val appName = getAppName(context)
     val appVersion = getAppVersion(context, "v")
 
     val fields: StateFlow<List<SettingFieldData>> =
@@ -124,7 +122,7 @@ open class SettingPanelViewModel @Inject constructor(
                     options = languageOptions,
                     onSelect = { activity, i  ->
                         viewModelScope.launch {
-                            repo.saveLanguage(languageCodes[i], activity);
+                            repo.saveLanguage(languageCodes[i], activity)
                         }
                     }
                 ),
@@ -145,7 +143,7 @@ open class SettingPanelViewModel @Inject constructor(
                     id = "version",
                     label = R.string.version,
                     icon = Icons.Filled.Info,
-                    current = "$appName $appVersion",
+                    current = appVersion,
                     onClick = {}
                 ),
             )

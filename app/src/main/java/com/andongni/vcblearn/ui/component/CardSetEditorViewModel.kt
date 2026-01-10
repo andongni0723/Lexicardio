@@ -3,6 +3,7 @@ package com.andongni.vcblearn.ui.component
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.andongni.vcblearn.data.CardDetail
+import com.andongni.vcblearn.data.CardSetJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -12,6 +13,11 @@ open class CardSetEditorViewModel @Inject constructor() : ViewModel() {
     private val _cards = MutableStateFlow<List<CardDetail>>(listOf(CardDetail(), CardDetail()))
     val cards = _cards.asStateFlow()
     var cardsIsDefault = true
+
+    fun cardsInitial(cardSetJson: CardSetJson?) {
+        if (cardSetJson == null) return
+        _cards.update { cardSetJson.cards }
+    }
 
     fun addCard() {
         cardsIsDefault = false

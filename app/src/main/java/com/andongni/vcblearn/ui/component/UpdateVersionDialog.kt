@@ -20,7 +20,7 @@ import com.andongni.vcblearn.utils.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpdateVersionDialog(
+fun UpdateVersionBottomSheet(
     context: Context,
     onDismiss: () -> Unit = {}
 ) {
@@ -53,7 +53,7 @@ fun UpdateVersionDialog(
             onDismiss()
             showSheet = false
         },
-        sheetState = rememberModalBottomSheetState()
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ) {
         Column(
             modifier = Modifier

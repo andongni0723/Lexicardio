@@ -1,6 +1,7 @@
 package com.andongni.vcblearn.ui.panel
 
 import android.content.res.Resources
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -58,13 +59,20 @@ class FakeCardSetEditorViewModel : CardSetEditorViewModel()
 fun CreateCardSetScreen(
     navController: NavController,
     viewModel: CardSetEditorViewModel = hiltViewModel(),
-    dataViewModel: DataManagerModel = hiltViewModel()
+    dataViewModel: DataManagerModel = hiltViewModel(),
+    cardSetUri: Uri? = null,
+    cardSetData: CardSetJson? = CardSetJson(cards = listOf(CardDetail())),
 ) {
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val cards by viewModel.cards.collectAsStateWithLifecycle()
     var showLeaveDialog by rememberSaveable { mutableStateOf(false) }
     var setName by rememberSaveable { mutableStateOf("") }
+
+    //FIXME
+//    LaunchedEffect(Unit) {
+//        viewModel.cardsInitial(cardSetData)
+//    }
 
     val importedCards =
         navController.currentBackStackEntry

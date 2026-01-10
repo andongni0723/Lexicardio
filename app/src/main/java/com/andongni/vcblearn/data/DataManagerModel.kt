@@ -60,6 +60,8 @@ class DataManager @Inject constructor(
     private val settingRepo: SettingsRepository,
     @ApplicationContext private val context: Context,
 ) {
+    private val prettyJson = Json { prettyPrint = true }
+
     val userFolder: Flow<String?> = settingRepo.userFolder
 
     private val userRoot: Flow<DocumentFile?> = settingRepo.userFolder
@@ -124,20 +126,18 @@ class DataManager @Inject constructor(
         val root = DocumentFile.fromTreeUri(context, rootUri.toUri()) ?: return@withContext false
         if (!root.canWrite()) return@withContext false
 
-        var baseName = if(cardSetJson.name.isNotBlank()) cardSetJson.name else "(Unnamed)"
+        val baseName = if(cardSetJson.name.isNotBlank()) cardSetJson.name else "(Unnamed)"
         var fileName = "$baseName.json"
 
-        // Check if file already exists
+        // Rename file if name repeated
         var idx = 1
         while (root.findFile(fileName) != null) {
             fileName = "$baseName ($idx).json"
             idx++
         }
 
-        // Serialize
-        var jsonText = Json { prettyPrint = true }.encodeToString(cardSetJson)
-
         // Make File
+        var jsonText = prettyJson.encodeToString(cardSetJson)
         val file = root.createFile("application/json", fileName) ?: return@withContext false
         context.contentResolver.openOutputStream(file.uri)?.use { out ->
             out.write(jsonText.toByteArray())
@@ -146,17 +146,58 @@ class DataManager @Inject constructor(
         true
     }
 
+    suspend fun editCardSet(oldUri: Uri, newCardSetJson: CardSetJson): Boolean = withContext(Dispatchers.IO) {
+        val rootUri = settingRepo.userFolder.firstOrNull() ?: return@withContext false
+        val root = DocumentFile.fromTreeUri(context, rootUri.toUri()) ?: return@withContext false
+        if (!root.canWrite()) return@withContext false
+        val oldFile = DocumentFile.fromSingleUri(context, oldUri) ?: return@withContext false
+        if (!oldFile.canWrite()) return@withContext false
+
+        val baseName = if(newCardSetJson.name.isNotBlank()) newCardSetJson.name else "(Unnamed)"
+        var fileName = "$baseName.json"
+
+        // Rename file if name repeated (Not include self)
+        var idx = 1
+        while (true) {
+            val existing = root.findFile(fileName)
+            if (existing == null || existing.uri != oldUri) break
+            fileName = "$baseName ($idx).json"
+            idx++
+        }
+
+        // Try rename file
+        if (oldFile.name != fileName && !oldFile.renameTo(fileName)) return@withContext false
+
+        // write file
+        val jsonText = Json.encodeToString(newCardSetJson)
+        context.contentResolver.openOutputStream(oldFile.uri)?.use { out ->
+            out.write(jsonText.toByteArray())
+        } ?: return@withContext false
+
+        true
+    }
+
     /** Converts an array of [DocumentFile]s to a list of [JsonEntry]s. */
-    private fun Array<DocumentFile>.toJsonEntries(): List<JsonEntry> =
-        filter { it.isFile && it.name?.endsWith(".json", ignoreCase = true) == true }
-            .filter { isValidJson(it) }
-            .map { file ->
+    private suspend fun Array<DocumentFile>.toJsonEntries(): List<JsonEntry> =
+        buildList {
+            for (file in this@toJsonEntries) {
+                if (!file.isFile || file.name?.endsWith(".json", ignoreCase = true) != true) continue
+                if (!isValidJson(file)) continue
                 val rawName = file.name ?: "(Unnamed)"
                 val displayName = rawName.substringBeforeLast(".", rawName)
-                JsonEntry(displayName, file.uri)
+                add(JsonEntry(displayName, file.uri))
             }
+        }
 
-    private fun isValidJson(file: DocumentFile): Boolean = true
+    private suspend fun isValidJson(file: DocumentFile): Boolean {
+        try {
+            val json = loadCardSetJson(file.uri)
+            if (json.cards.isEmpty()) throw Exception()
+            return true
+        } catch (_: Exception) {
+            return false
+        }
+    }
 }
 
 @HiltViewModel
@@ -205,6 +246,10 @@ open class DataManagerModel @Inject constructor(
     suspend fun createCardSet(cardSetJson: CardSetJson): Boolean =
         dataManager.createCardSet(cardSetJson)
 
+    /** Edit the card set and rename. */
+    suspend fun editCardSet(oldUri: Uri, newCardSetJson: CardSetJson) =
+        dataManager.editCardSet(oldUri, newCardSetJson)
+
     suspend fun reloadFolders() =
         _isFoldersRefreshing.refresh { _folders.emit(dataManager.allSubFolder.first()) }
 
@@ -212,6 +257,6 @@ open class DataManagerModel @Inject constructor(
         _isJsonRefreshing.refresh { _allJsonFiles.emit(dataManager.allJsonFiles.first()) }
 
     suspend fun <T> MutableStateFlow<Boolean>.refresh(block: suspend () -> T) {
-        emit(true); block(); delay(16); emit(false);
+        emit(true); block(); delay(16); emit(false)
     }
 }

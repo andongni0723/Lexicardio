@@ -34,9 +34,9 @@ fun QuestionContent(
     onNext: () -> Unit = {}
 ) {
     val answered = when (uiState) {
-        is QuestionUiState.TrueFalse        -> uiState.userAnswer != null
-        is QuestionUiState.MultipleChoice   -> uiState.selectedIndex != null
-        is QuestionUiState.Written          -> uiState.userText.isNotBlank()
+        is QuestionUiState.TrueFalse -> uiState.userAnswer != null
+        is QuestionUiState.MultipleChoice -> uiState.selectedIndex != null
+        is QuestionUiState.Written -> uiState.userText.isNotBlank()
     }
 
     Text(uiState.data.title, style = MaterialTheme.typography.headlineMedium)
@@ -47,7 +47,7 @@ fun QuestionContent(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        when(uiState) {
+        when (uiState) {
             is QuestionUiState.TrueFalse -> {
                 Text(uiState.data.shownText, style = MaterialTheme.typography.headlineMedium)
 
@@ -60,11 +60,12 @@ fun QuestionContent(
                         text =
                             if (option) stringResource(R.string.true_word)
                             else stringResource(R.string.false_word),
-                        state = when(uiState.userAnswer) {
+                        state = when (uiState.userAnswer) {
                             null -> OptionUiState.None
                             option ->
-                                if(next.isCorrect) OptionUiState.Correct
+                                if (next.isCorrect) OptionUiState.Correct
                                 else OptionUiState.Wrong
+
                             else -> OptionUiState.None
                         },
                         enable = uiState.userAnswer == null,
@@ -74,6 +75,7 @@ fun QuestionContent(
                     )
                 }
             }
+
             is QuestionUiState.MultipleChoice -> {
                 uiState.data.options.forEachIndexed { idx, option ->
                     val next = uiState.copy(selectedIndex = idx)
@@ -84,7 +86,7 @@ fun QuestionContent(
 
                             // User Selected -> Show by this option is correct answer
                             idx == uiState.selectedIndex ->
-                                if(next.isCorrect) OptionUiState.Correct
+                                if (next.isCorrect) OptionUiState.Correct
                                 else OptionUiState.Wrong
 
                             // Correct Answer -> show when after answer
@@ -96,12 +98,16 @@ fun QuestionContent(
                         enable = uiState.selectedIndex == null,
                         onClick = {
                             onStateChange(next);
-                            if (answerType == AnswerType.Word)
-                                ttsViewModel.speak(uiState.data.options[uiState.data.correctIndex])
+                            val speakWord =
+                                if (answerType == AnswerType.Word)
+                                    uiState.data.options[uiState.data.correctIndex] else
+                                    uiState.data.title
+                            ttsViewModel.speak(speakWord)
                         }
                     )
                 }
             }
+
             is QuestionUiState.Written -> {
                 var userInput by remember { mutableStateOf("") }
                 OptionInput(
@@ -114,10 +120,10 @@ fun QuestionContent(
                         if (answerType == AnswerType.Word)
                             ttsViewModel.speak(uiState.data.correctText)
                     },
-                    state = when(uiState.userText) {
+                    state = when (uiState.userText) {
                         "" -> OptionUiState.None
                         else ->
-                            if(uiState.isCorrect) OptionUiState.Correct
+                            if (uiState.isCorrect) OptionUiState.Correct
                             else OptionUiState.Wrong
                     },
                 )
@@ -139,7 +145,7 @@ fun QuestionContent(
                 modifier = Modifier.fillMaxWidth(),
                 enter = fadeIn(),
                 exit = ExitTransition.None
-            ){
+            ) {
                 val next = uiState.copy(userText = uiState.data.correctText)
                 TextButton(
                     onClick = { onStateChange(next) },
@@ -158,7 +164,7 @@ fun QuestionContent(
             modifier = Modifier.fillMaxWidth(),
             enter = fadeIn(),
             exit = ExitTransition.None
-        ){
+        ) {
             Button(
                 onClick = onNext,
                 modifier = Modifier.fillMaxWidth()
@@ -188,7 +194,9 @@ private fun OptionBox(
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth().height(80.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
     ) {
 
         // Correct/Wrong
@@ -209,7 +217,7 @@ private fun OptionBox(
                 ),
                 colors = CardDefaults.cardColors(containerColor = color),
                 modifier = Modifier.fillMaxHeight()
-            ){}
+            ) {}
         }
 
         OutlinedButton(
@@ -217,16 +225,18 @@ private fun OptionBox(
             onClick = onClick,
             enabled = enable,
             shape = RoundedCornerShape(
-                topStart = if(state == OptionUiState.None) 12.dp else 1.dp,
-                bottomStart = if(state == OptionUiState.None) 12.dp else 1.dp,
+                topStart = if (state == OptionUiState.None) 12.dp else 1.dp,
+                bottomStart = if (state == OptionUiState.None) 12.dp else 1.dp,
                 topEnd = 12.dp,
                 bottomEnd = 12.dp
             ),
             contentPadding = PaddingValues(0.dp)
         ) {
-            val h = if(state == OptionUiState.None) 24.dp else 12.dp
+            val h = if (state == OptionUiState.None) 24.dp else 12.dp
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = h, vertical = 24.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = h, vertical = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -237,12 +247,14 @@ private fun OptionBox(
                     Icon(
                         imageVector = icon,
                         contentDescription = "State Icon",
-                        tint = color)
+                        tint = color
+                    )
                 }
                 Text(
                     text,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground)
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
         }
     }
@@ -266,7 +278,9 @@ private fun OptionInput(
         OutlinedTextField(
             value = text,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth().height(100.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp),
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done
             ),
@@ -275,8 +289,10 @@ private fun OptionInput(
             ),
             singleLine = true,
             placeholder = {
-                Text("Input Answer", color =
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
+                Text(
+                    "Input Answer", color =
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                )
             },
         )
     }
@@ -310,7 +326,7 @@ fun SwitchSetting(
     checked: Boolean,
     onChange: (Boolean) -> Unit
 ) {
-    Row (
+    Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -336,10 +352,10 @@ fun TextFieldSetting(
     onValueChange: (String) -> Unit,
     commitValue: () -> Unit,
 ) {
-    val focusManager   = LocalFocusManager.current
+    val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
 
-    Row (
+    Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -384,7 +400,7 @@ fun SegmentButtonGroupSetting(
     selected: (AnswerType) -> Boolean = { true },
     onClick: (Int, AnswerType) -> Unit,
 ) {
-    Row (
+    Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -415,10 +431,14 @@ fun BatchEndContent(
 ) {
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(top = 16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 16.dp)
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth().weight(12f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(12f),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(cards) { card ->
@@ -428,7 +448,11 @@ fun BatchEndContent(
 
         Spacer(Modifier.height(16.dp))
 
-        Box(Modifier.fillMaxWidth().padding(bottom = 24.dp)){
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp)
+        ) {
             PageMainButton(
                 title = "Next",
                 onClick = onNext
@@ -445,7 +469,9 @@ fun PageMainButton(
     onClick: () -> Unit,
 ) {
     Button(
-        modifier = Modifier.fillMaxWidth().height(48.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp),
         enabled = enable,
         onClick = onClick
     ) {
