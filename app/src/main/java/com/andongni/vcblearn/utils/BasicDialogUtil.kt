@@ -1,4 +1,4 @@
-package com.andongni.vcblearn.ui.component
+package com.andongni.vcblearn.utils
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable

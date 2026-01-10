@@ -18,7 +18,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
-import com.andongni.vcblearn.ui.component.ConfirmLeaveDialog
+import com.andongni.vcblearn.utils.ConfirmLeaveDialog
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 
 //region Preview

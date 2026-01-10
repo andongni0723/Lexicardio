@@ -10,6 +10,8 @@ import com.andongni.vcblearn.R
 
 val MyFont = FontFamily(
     Font(R.font.poppins_semibold, FontWeight.SemiBold),
+    Font(R.font.poppins_medium, FontWeight.Medium),
+    Font(R.font.poppins_regular, FontWeight.Normal)
 )
 
 val Impact = FontFamily(
@@ -19,23 +21,23 @@ val Impact = FontFamily(
 val AppTypography = Typography().withFont(MyFont)
 
 fun Typography.withFont(fontFamily: FontFamily) = Typography(
-    displayLarge   = displayLarge.copy(fontFamily = fontFamily),
-    displayMedium  = displayMedium.copy(fontFamily = fontFamily),
-    displaySmall   = displaySmall.copy(fontFamily = fontFamily),
+    displayLarge = displayLarge.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    displayMedium = displayMedium.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    displaySmall = displaySmall.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
 
-    headlineLarge  = headlineLarge.copy(fontFamily = fontFamily),
-    headlineMedium = headlineMedium.copy(fontFamily = fontFamily),
-    headlineSmall  = headlineSmall.copy(fontFamily = fontFamily),
+    headlineLarge = headlineLarge.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    headlineMedium = headlineMedium.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    headlineSmall = headlineSmall.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
 
-    titleLarge     = titleLarge.copy(fontFamily = fontFamily),
-    titleMedium    = titleMedium.copy(fontFamily = fontFamily),
-    titleSmall     = titleSmall.copy(fontFamily = fontFamily),
+    titleLarge = titleLarge.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    titleMedium = titleMedium.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    titleSmall = titleSmall.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
 
-    bodyLarge      = bodyLarge.copy(fontFamily = fontFamily),
-    bodyMedium     = bodyMedium.copy(fontFamily = fontFamily),
-    bodySmall      = bodySmall.copy(fontFamily = fontFamily),
+    bodyLarge = bodyLarge.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    bodyMedium = bodyMedium.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    bodySmall = bodySmall.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
 
-    labelLarge     = labelLarge.copy(fontFamily = fontFamily),
-    labelMedium    = labelMedium.copy(fontFamily = fontFamily),
-    labelSmall     = labelSmall.copy(fontFamily = fontFamily),
+    labelLarge = labelLarge.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    labelMedium = labelMedium.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
+    labelSmall = labelSmall.copy(fontFamily = fontFamily, fontWeight = FontWeight.SemiBold),
 )

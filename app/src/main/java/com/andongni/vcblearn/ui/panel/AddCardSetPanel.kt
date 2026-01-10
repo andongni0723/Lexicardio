@@ -33,7 +33,7 @@ import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.ui.component.CardSetEditorViewModel
-import com.andongni.vcblearn.ui.component.ConfirmLeaveDialog
+import com.andongni.vcblearn.utils.ConfirmLeaveDialog
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.12.0
+更新內容:
+- 重構「發現新版本」面板。
+- 新增「直接下載」按鈕。
+- Release 改成使用 arm64 APK 檔案。
+
+Updates:
+- Refactor "New Version" panel
+- Add a direct download button.
+- Change the release to use an arm64 APK file.
+
 ## v0.11.0
 - Add today learned module.
 - Add daily learning goal.
