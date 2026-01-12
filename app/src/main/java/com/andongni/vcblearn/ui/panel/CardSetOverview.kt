@@ -1,7 +1,6 @@
 package com.andongni.vcblearn.ui.panel
 
 import android.content.ClipData
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,11 +23,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.route.NavRoute
+import com.andongni.vcblearn.route.encodeBase64Uri
 import com.andongni.vcblearn.ui.component.TtsViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
 import kotlinx.coroutines.launch
@@ -56,8 +57,20 @@ fun CardSetOverviewPanel(
 ) {
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val cardSetDetail by produceState<CardSetJson>(CardSetJson(), cardSetData.uri) {
+    val updatedFlagFlow =
+        navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.getStateFlow("cardSetUpdated", false)
+    val updatedFlag by (updatedFlagFlow?.collectAsStateWithLifecycle(false)
+        ?: remember { mutableStateOf(false) })
+
+    val cardSetDetail by produceState<CardSetJson>(CardSetJson(), cardSetData.uri, updatedFlag) {
         value = viewModel.getCardSetJsonDetail(cardSetData.uri)
+        if (updatedFlag) {
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.set("cardSetUpdated", false)
+        }
     }
 
     var menuExpanded by remember { mutableStateOf(false) }
@@ -113,7 +126,11 @@ fun CardSetOverviewPanel(
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.edit_card_set)) },
                                 onClick = {
-                                    Toast.makeText(context, "Coming soon.", Toast.LENGTH_SHORT).show()
+                                    // Toast.makeText(context, "Coming soon.", Toast.LENGTH_SHORT).show()
+                                    val encodeUri = cardSetData.uri.encodeBase64Uri()
+                                    navController.navigate(NavRoute.CardSetEditor.route
+                                     + "?${NavRoute.CardSetEditor.base64EncodeUriArg}=${encodeUri}"
+                                    )
                                     menuExpanded = false
                                 },
                                 leadingIcon = {
@@ -152,16 +169,18 @@ fun CardSetOverviewPanel(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         ) {
             item {
-                WordCarousel(
-                    cardList = cardSetDetail.cards,
-                    state = rememberCarouselState { cardSetDetail.cards.count() },
-                    modifier = Modifier.fillMaxWidth().height(200.dp)
-                )
+                key(cardSetDetail.cards.size) {
+                    WordCarousel(
+                        cardList = cardSetDetail.cards,
+                        state = rememberCarouselState { cardSetDetail.cards.count() },
+                        modifier = Modifier.fillMaxWidth().height(200.dp)
+                    )
+                }
             }
 
             item {
                 Text(
-                    cardSetData.name,
+                    cardSetDetail.name,
                     modifier = Modifier.padding(top = 16.dp),
                     style = MaterialTheme.typography.titleLarge
                 )
@@ -272,7 +291,7 @@ fun WordCarousel(
         flingBehavior = CarouselDefaults.multiBrowseFlingBehavior(state),
         preferredItemWidth = 250.dp
     ) {  page ->
-
+        if (page !in cardList.indices) return@HorizontalMultiBrowseCarousel
         var flip by rememberSaveable { mutableStateOf(false) }
 
         Button(

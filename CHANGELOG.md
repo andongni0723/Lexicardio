@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.13.0
+更新內容:
+- 新增「編輯卡組」功能。
+
+Updates:
+- Add an “Edit Card Set” feature.
+
 ## v0.12.0
 更新內容:
 - 重構「發現新版本」面板。

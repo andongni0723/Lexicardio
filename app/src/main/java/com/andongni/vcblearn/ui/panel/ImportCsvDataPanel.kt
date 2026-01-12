@@ -34,11 +34,11 @@ import com.andongni.vcblearn.ui.theme.LexicardioTheme
 fun ImportCsvDataPanelPreview() {
     LexicardioTheme(themeCode = "dark") {
         val navController = rememberNavController()
-        val fakeVm = remember { FakeImportCsvDataViewModel() }
-        ImportCsvDataPanel(navController, fakeVm)
+//        val fakeVm = remember { FakeImportCsvDataViewModel() }
+//        ImportCsvDataPanel(navController, fakeVm)
     }
 }
-class FakeImportCsvDataViewModel : CardSetEditorViewModel()
+//class FakeImportCsvDataViewModel : CardSetEditorViewModel()
 //endregion
 
 

@@ -27,7 +27,7 @@ import com.andongni.vcblearn.data.QuestionData
 import com.andongni.vcblearn.data.QuestionUiState
 import com.andongni.vcblearn.data.TestModelSettingDetail
 import com.andongni.vcblearn.ui.panel.CardSetOverviewPanel
-import com.andongni.vcblearn.ui.panel.CreateCardSetScreen
+import com.andongni.vcblearn.ui.panel.CardSetEditorScreen
 import com.andongni.vcblearn.ui.panel.FolderPanel
 import com.andongni.vcblearn.ui.panel.ImportCsvDataPanel
 import com.andongni.vcblearn.ui.panel.study.TestModePanel
@@ -39,7 +39,10 @@ import com.andongni.vcblearn.ui.panel.study.TestResultPanel
 
 sealed class NavRoute(val route: String) {
     data object Home : NavRoute("home")
-    data object CreateCardSet : NavRoute("create_card_set")
+    data object CardSetEditor : NavRoute("create_card_set") {
+        const val routeWithArg = "create_card_set?uri={uri}"
+        const val base64EncodeUriArg = "uri"
+    }
     data object ImportCsvData : NavRoute("import_csv_data")
     data object Setting : NavRoute("setting")
     data object Folder : NavRoute("folder") {
@@ -64,10 +67,12 @@ fun Uri.encodeBase64Uri(): String =
         Base64.encodeToString(uri.toString().toByteArray(), Base64.URL_SAFE or Base64.NO_WRAP)
     }
 
-private fun String?.decodeBase64Uri(): Uri =
-    this?.let { encoded ->
-        String(Base64.decode(encoded, Base64.URL_SAFE or Base64.NO_WRAP)).toUri()
-    } ?: Uri.EMPTY
+fun String?.decodeBase64Uri(): Uri =
+    if (this.isNullOrBlank()) {
+        Uri.EMPTY
+    } else {
+        String(Base64.decode(this, Base64.URL_SAFE or Base64.NO_WRAP)).toUri()
+    }
 
 @Composable
 fun LexicardioNavGraph() {
@@ -94,8 +99,17 @@ fun LexicardioNavGraph() {
             MyApp(navController)
         }
 
-        composable(NavRoute.CreateCardSet.route) {
-            CreateCardSetScreen(navController)
+        composable(
+            NavRoute.CardSetEditor.routeWithArg,
+            listOf(
+                navArgument(NavRoute.CardSetEditor.base64EncodeUriArg) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = ""
+                }
+            )
+        ) {
+            CardSetEditorScreen(navController)
         }
 
         composable(NavRoute.ImportCsvData.route) {

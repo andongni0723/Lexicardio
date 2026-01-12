@@ -166,11 +166,11 @@ class DataManager @Inject constructor(
         }
 
         // Try rename file
-        if (oldFile.name != fileName && !oldFile.renameTo(fileName)) return@withContext false
+        // if (oldFile.name != fileName && !oldFile.renameTo(fileName)) return@withContext false
 
         // write file
-        val jsonText = Json.encodeToString(newCardSetJson)
-        context.contentResolver.openOutputStream(oldFile.uri)?.use { out ->
+        val jsonText = prettyJson.encodeToString(newCardSetJson)
+        context.contentResolver.openOutputStream(oldFile.uri, "wt")?.use { out ->
             out.write(jsonText.toByteArray())
         } ?: return@withContext false
 
@@ -182,8 +182,9 @@ class DataManager @Inject constructor(
         buildList {
             for (file in this@toJsonEntries) {
                 if (!file.isFile || file.name?.endsWith(".json", ignoreCase = true) != true) continue
+                val cardSetJson = loadCardSetJson(file.uri);
                 if (!isValidJson(file)) continue
-                val rawName = file.name ?: "(Unnamed)"
+                val rawName = cardSetJson.name
                 val displayName = rawName.substringBeforeLast(".", rawName)
                 add(JsonEntry(displayName, file.uri))
             }

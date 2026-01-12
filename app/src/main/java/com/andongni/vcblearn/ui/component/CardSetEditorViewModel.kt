@@ -1,23 +1,53 @@
 package com.andongni.vcblearn.ui.component
 
+import android.net.Uri
 import android.util.Log
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.andongni.vcblearn.data.CardDetail
 import com.andongni.vcblearn.data.CardSetJson
+import com.andongni.vcblearn.data.DataManager
+import com.andongni.vcblearn.route.decodeBase64Uri
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import okio.ByteString.Companion.decodeBase64
 import javax.inject.Inject
 
 @HiltViewModel
-open class CardSetEditorViewModel @Inject constructor() : ViewModel() {
+open class CardSetEditorViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val dataManager: DataManager
+) : ViewModel() {
+
+    val initUri: Uri? = savedStateHandle
+        .get<String>("uri")
+        ?.takeIf { it.isNotBlank() }
+        ?.decodeBase64Uri()
+
     private val _cards = MutableStateFlow<List<CardDetail>>(listOf(CardDetail(), CardDetail()))
+    private val _name = MutableStateFlow<String>("")
+    private val _isLoading = MutableStateFlow(true)
     val cards = _cards.asStateFlow()
+    val name = _name.asStateFlow()
+    val isLoading = _isLoading.asStateFlow()
     var cardsIsDefault = true
 
-    fun cardsInitial(cardSetJson: CardSetJson?) {
-        if (cardSetJson == null) return
-        _cards.update { cardSetJson.cards }
+    init {
+        initUri?.let { uri ->
+            cardsIsDefault = false
+            viewModelScope.launch {
+                val cardSetJson = dataManager.loadCardSetJson(initUri)
+                _cards.update { cardSetJson.cards }
+                _name.update { cardSetJson.name }
+                _isLoading.value = false;
+            }
+        }
     }
+
+    fun setName(new: String) = _name.update { new }
 
     fun addCard() {
         cardsIsDefault = false

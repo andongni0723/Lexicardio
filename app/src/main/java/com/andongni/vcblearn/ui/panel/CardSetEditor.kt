@@ -46,33 +46,27 @@ import kotlinx.coroutines.launch
 fun CreateCardSetScreenPreview() {
     LexicardioTheme {
         val navController = rememberNavController()
-        val fakeVm = remember { FakeCardSetEditorViewModel() }
-        CreateCardSetScreen(navController, fakeVm)
+//        val fakeVm = remember { FakeCardSetEditorViewModel(hiltViewModel<DataManager>()) }
+//        CardSetEditorScreen(navController, fakeVm)
     }
 }
-class FakeCardSetEditorViewModel : CardSetEditorViewModel()
+//class FakeCardSetEditorViewModel(dataManager: DataManager) : CardSetEditorViewModel(dataManager)
 //endregion
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateCardSetScreen(
+fun CardSetEditorScreen(
     navController: NavController,
     viewModel: CardSetEditorViewModel = hiltViewModel(),
     dataViewModel: DataManagerModel = hiltViewModel(),
-    cardSetUri: Uri? = null,
-    cardSetData: CardSetJson? = CardSetJson(cards = listOf(CardDetail())),
 ) {
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val cards by viewModel.cards.collectAsStateWithLifecycle()
+    val name by viewModel.name.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     var showLeaveDialog by rememberSaveable { mutableStateOf(false) }
-    var setName by rememberSaveable { mutableStateOf("") }
-
-    //FIXME
-//    LaunchedEffect(Unit) {
-//        viewModel.cardsInitial(cardSetData)
-//    }
 
     val importedCards =
         navController.currentBackStackEntry
@@ -102,6 +96,21 @@ fun CreateCardSetScreen(
         }
     )
 
+    fun clickDoneButton() {
+        val cardSet = CardSetJson(name, viewModel.cards.value)
+        scope.launch {
+            val ok = viewModel.initUri?.let { uri ->
+                dataViewModel.editCardSet(uri, cardSet)
+            } ?: dataViewModel.createCardSet(cardSet)
+            if (ok) {
+                navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("cardSetUpdated", true)
+                navController.popBackStack()
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -116,14 +125,8 @@ fun CreateCardSetScreen(
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Filled.Settings, contentDescription = "Settings")
                     }
-                    IconButton(onClick = {
-                        val cardSet = CardSetJson(setName, viewModel.cards.value)
-                        scope.launch {
-                            val ok = dataViewModel.createCardSet(cardSet)
-                            if (ok) navController.popBackStack()
-                        }
-                    }) {
-                        Icon(Icons.Filled.Check, contentDescription = "Create")
+                    IconButton(onClick = ::clickDoneButton, enabled = !isLoading) {
+                        Icon(Icons.Filled.Check, contentDescription = "Done")
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -145,8 +148,8 @@ fun CreateCardSetScreen(
         ) {
             item {
                 OutlinedTextField(
-                    value = setName,
-                    onValueChange = { setName = it },
+                    value = name,
+                    onValueChange = { viewModel.setName(it) },
                     label = { Text(stringResource(R.string.title)) },
                     modifier = Modifier.fillMaxWidth()
                 )
