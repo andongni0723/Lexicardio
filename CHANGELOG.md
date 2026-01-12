@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.13.1
+更新內容:
+- 新增「編輯卡組」功能。
+- 修復直接下載鏈接錯誤
+
+Updates:
+- Add an “Edit Card Set” feature.
+- Fix the direct download button with the wrong link.
+
 ## v0.13.0
 更新內容:
 - 新增「編輯卡組」功能。

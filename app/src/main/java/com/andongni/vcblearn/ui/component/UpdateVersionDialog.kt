@@ -84,7 +84,7 @@ fun UpdateVersionBottomSheet(
                     title = updateInfo?.fileName ?: "app-release.apk",
                     subtitle = "${bytesToMiB(updateInfo?.size ?: 0)} MB",
                     icon = Icons.Filled.Download,
-                    uriString = "https://github.com/andongni0723/Lexicardio/releases/download/v0.11.0/app-release.apk",
+                    uriString = "https://github.com/andongni0723/Lexicardio/releases/download/${updateInfo?.version}/${updateInfo?.fileName}",
                 )
 
                 ExternalLinkButton(
