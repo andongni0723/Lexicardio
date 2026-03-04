@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VCBLearn"
+rootProject.name = "Lexicardio"
 include(":app")

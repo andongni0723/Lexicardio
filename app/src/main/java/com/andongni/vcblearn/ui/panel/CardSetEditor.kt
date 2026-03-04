@@ -115,7 +115,7 @@ fun CardSetEditorScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.create_card_set)) },
+                title = { Text(stringResource(if (viewModel.edit) R.string.edit_card_set else R.string.create_card_set)) },
                 navigationIcon = {
                     IconButton(onClick = { showLeaveDialog = true }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -192,7 +192,7 @@ private fun CardEditItem(
     onDelete: () -> Unit
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { it == SwipeToDismissBoxValue.EndToStart},
+        confirmValueChange = { it == SwipeToDismissBoxValue.EndToStart },
         positionalThreshold = { it * 0.5f; }
     )
     val density = LocalDensity.current
@@ -202,8 +202,9 @@ private fun CardEditItem(
         derivedStateOf {
             when {
                 dismissState.dismissDirection != SwipeToDismissBoxValue.EndToStart ||
-                dismissState.targetValue != SwipeToDismissBoxValue.EndToStart &&
-                dismissState.progress == 1.0f -> 0.dp
+                        dismissState.targetValue != SwipeToDismissBoxValue.EndToStart &&
+                        dismissState.progress == 1.0f -> 0.dp
+
                 else -> {
                     val progress = dismissState.progress.coerceIn(0f, 1f)
                     elementMaxWidthDp * progress
@@ -224,7 +225,8 @@ private fun CardEditItem(
     val animatedAlpha by animateFloatAsState(
         if (isCollapsed) 0f else 1f,
         label = "animation alpha",
-        animationSpec = tween(300))
+        animationSpec = tween(300)
+    )
 
     LaunchedEffect(dismissState.currentValue) {
         if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) isCollapsed = true
@@ -236,13 +238,14 @@ private fun CardEditItem(
             .distinctUntilChanged()
             .collect { target ->
                 if (target == SwipeToDismissBoxValue.EndToStart ||
-                    target == SwipeToDismissBoxValue.StartToEnd) {
+                    target == SwipeToDismissBoxValue.StartToEnd
+                ) {
                     haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                 }
             }
     }
 
-    Box (
+    Box(
         modifier = Modifier
             .graphicsLayer { alpha = animatedAlpha }
             .then(
@@ -279,12 +282,16 @@ private fun SwipeBoxBackground(
     backgroundWidth: Dp
 ) {
     Card(
-        modifier = Modifier.width(backgroundWidth).padding(start = 16.dp),
+        modifier = Modifier
+            .width(backgroundWidth)
+            .padding(start = 16.dp),
         shape = ShapeDefaults.Large,
         colors = cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.End
         ) {
@@ -308,7 +315,7 @@ fun CardEdit(
     inputEnable: Boolean = true,
     onCardChange: (CardDetail) -> Unit = {},
 ) {
-    var word       by remember(card) { mutableStateOf(card.word) }
+    var word by remember(card) { mutableStateOf(card.word) }
     var definition by remember(card) { mutableStateOf(card.definition) }
 
     LaunchedEffect(word, definition) {
@@ -334,8 +341,13 @@ fun CardEdit(
             TextField(
                 value = word,
                 readOnly = !inputEnable,
-                onValueChange = { word = it},
-                label = { Text(stringResource(R.string.word), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)) },
+                onValueChange = { word = it },
+                label = {
+                    Text(
+                        stringResource(R.string.word),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = textFieldColors,
                 singleLine = true
@@ -343,8 +355,13 @@ fun CardEdit(
             TextField(
                 value = definition,
                 readOnly = !inputEnable,
-                onValueChange = { definition = it},
-                label = { Text(stringResource(R.string.definition), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)) },
+                onValueChange = { definition = it },
+                label = {
+                    Text(
+                        stringResource(R.string.definition),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = textFieldColors,
                 singleLine = true

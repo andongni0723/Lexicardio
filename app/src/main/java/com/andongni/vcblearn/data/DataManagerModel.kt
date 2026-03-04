@@ -126,7 +126,7 @@ class DataManager @Inject constructor(
         val root = DocumentFile.fromTreeUri(context, rootUri.toUri()) ?: return@withContext false
         if (!root.canWrite()) return@withContext false
 
-        val baseName = if(cardSetJson.name.isNotBlank()) cardSetJson.name else "(Unnamed)"
+        val baseName = cardSetJson.name.ifBlank { "(Unnamed)" }
         var fileName = "$baseName.json"
 
         // Rename file if name repeated
@@ -137,7 +137,7 @@ class DataManager @Inject constructor(
         }
 
         // Make File
-        var jsonText = prettyJson.encodeToString(cardSetJson)
+        val jsonText = prettyJson.encodeToString(cardSetJson)
         val file = root.createFile("application/json", fileName) ?: return@withContext false
         context.contentResolver.openOutputStream(file.uri)?.use { out ->
             out.write(jsonText.toByteArray())
@@ -153,7 +153,7 @@ class DataManager @Inject constructor(
         val oldFile = DocumentFile.fromSingleUri(context, oldUri) ?: return@withContext false
         if (!oldFile.canWrite()) return@withContext false
 
-        val baseName = if(newCardSetJson.name.isNotBlank()) newCardSetJson.name else "(Unnamed)"
+        val baseName = newCardSetJson.name.ifBlank { "(Unnamed)" }
         var fileName = "$baseName.json"
 
         // Rename file if name repeated (Not include self)
@@ -182,7 +182,7 @@ class DataManager @Inject constructor(
         buildList {
             for (file in this@toJsonEntries) {
                 if (!file.isFile || file.name?.endsWith(".json", ignoreCase = true) != true) continue
-                val cardSetJson = loadCardSetJson(file.uri);
+                val cardSetJson = loadCardSetJson(file.uri)
                 if (!isValidJson(file)) continue
                 val rawName = cardSetJson.name
                 val displayName = rawName.substringBeforeLast(".", rawName)

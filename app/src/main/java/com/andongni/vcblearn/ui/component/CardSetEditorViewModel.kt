@@ -30,19 +30,27 @@ open class CardSetEditorViewModel @Inject constructor(
     private val _cards = MutableStateFlow<List<CardDetail>>(listOf(CardDetail(), CardDetail()))
     private val _name = MutableStateFlow<String>("")
     private val _isLoading = MutableStateFlow(true)
+
+    val edit = initUri != null
+
     val cards = _cards.asStateFlow()
     val name = _name.asStateFlow()
     val isLoading = _isLoading.asStateFlow()
     var cardsIsDefault = true
 
     init {
-        initUri?.let { uri ->
+        if (initUri == null) {
+            _isLoading.value = false
+        } else {
             cardsIsDefault = false
             viewModelScope.launch {
-                val cardSetJson = dataManager.loadCardSetJson(initUri)
-                _cards.update { cardSetJson.cards }
-                _name.update { cardSetJson.name }
-                _isLoading.value = false;
+                try {
+                    val cardSetJson = dataManager.loadCardSetJson(initUri)
+                    _cards.update { cardSetJson.cards }
+                    _name.update { cardSetJson.name }
+                } finally {
+                    _isLoading.value = false
+                }
             }
         }
     }
