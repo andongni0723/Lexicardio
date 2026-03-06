@@ -4,27 +4,19 @@ package com.andongni.vcblearn.ui.panel.setting
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.*
-import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree
-import androidx.compose.foundation.background
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.selection.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import com.andongni.vcblearn.R
 import com.andongni.vcblearn.data.*
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
+import kotlin.math.roundToInt
 
 //region Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,22 +50,28 @@ fun SettingPanel(
     navController: NavController,
     viewModel: SettingPanelViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val fieldList by viewModel.fields.collectAsStateWithLifecycle()
-    var userData by rememberSaveable {
-        mutableStateOf<Map<String, String>>(mapOf("path" to "No Data"))
-    }
 
     // SAF Launcher
     val activity = LocalActivity.current as Activity
-    val folderPicker = rememberLauncherForActivityResult(OpenDocumentTree()) { uri ->
-        uri?.let {
-            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            activity.contentResolver.takePersistableUriPermission(it, flags)
-            viewModel.onFolderPicked(it.toString())
+    val folderPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val uri = result.data?.data ?: return@rememberLauncherForActivityResult
+        val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        activity.contentResolver.takePersistableUriPermission(uri, flags)
+        viewModel.onFolderPicked(uri.toString())
+    }
+
+    fun openFolderPickerChooser() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
+        folderPicker.launch(Intent.createChooser(intent, "Choose File Manager"))
     }
 
     // Dialog
@@ -116,29 +115,29 @@ fun SettingPanel(
                 when (field) {
                     is SettingFieldData.Basic -> {
                         SettingListItem(
-                            headline   = stringResource(field.label),
+                            headline = stringResource(field.label),
                             supporting = field.current,
-                            icon       = field.icon,
+                            icon = field.icon,
                             hasTrailingIcon = false,
-                            onClick    = {}
+                            onClick = {}
                         )
                     }
 
                     is SettingFieldData.Navigation -> {
                         SettingListItem(
-                            headline   = stringResource(field.label),
+                            headline = stringResource(field.label),
                             supporting = field.current,
-                            icon       = field.icon,
-                            onClick    = { folderPicker.launch(null);}
+                            icon = field.icon,
+                            onClick = { openFolderPickerChooser() }
                         )
                     }
 
                     is SettingFieldData.Dropdown -> {
                         SettingListItem(
-                            headline   = stringResource(field.label),
+                            headline = stringResource(field.label),
                             supporting = field.options[field.selectedIndex],
-                            icon       = field.icon,
-                            onClick    = { activeDialog = field }
+                            icon = field.icon,
+                            onClick = { activeDialog = field }
                         )
                     }
 
@@ -170,7 +169,10 @@ fun SettingPanel(
         when (field) {
             is SettingFieldData.Dropdown -> {
                 DropdownSettingFieldDialog(
-                    onDismissRequest = { activeDialog = null },
+                    onDismissRequest = {
+                        @Suppress("AssignedValueIsNeverRead")
+                        activeDialog = null
+                    },
                     title = stringResource(field.label),
                     fields = field.options,
                     currentSelected = field.options[field.selectedIndex],
@@ -182,12 +184,15 @@ fun SettingPanel(
 
             is SettingFieldData.Slider -> {
                 SliderSettingFieldDialog(
-                    onDismissRequest = { activeDialog = null },
+                    onDismissRequest = {
+                        @Suppress("AssignedValueIsNeverRead")
+                        activeDialog = null
+                    },
                     title = stringResource(field.label),
                     range = field.range,
                     currentValue = field.value.toInt(),
                     step = field.step,
-                    onValueChangeFinished = { field.onValueChangeFinished(it)}
+                    onValueChangeFinished = { field.onValueChangeFinished(it) }
                 )
             }
 
@@ -303,7 +308,9 @@ private fun SliderSettingFieldDialog(
     step: Int = 0,
     onValueChangeFinished: (Int) -> Unit = {}
 ) {
-    var newValue by rememberSaveable { mutableIntStateOf(currentValue) }
+    var newValue by rememberSaveable {
+        mutableIntStateOf(snapSliderValue(currentValue.toFloat(), range, step))
+    }
     val steps = if (step <= 0) {
         0
     } else {
@@ -325,9 +332,8 @@ private fun SliderSettingFieldDialog(
                     modifier = Modifier.weight(1f),
                     value = newValue.toFloat(),
                     onValueChange = {
-                        newValue = it.toInt()
+                        newValue = snapSliderValue(it, range, step)
                     },
-                    onValueChangeFinished = { onValueChangeFinished(newValue.toInt()) },
                     valueRange = range,
                     steps = steps,
                 )
@@ -342,10 +348,27 @@ private fun SliderSettingFieldDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
-                onClick = { onDismissRequest() }
+                onClick = {
+                    onValueChangeFinished(newValue)
+                    onDismissRequest()
+                }
             ) {
                 Text(stringResource(R.string.confirm), color = MaterialTheme.colorScheme.primary)
             }
         },
     )
+}
+
+private fun snapSliderValue(
+    rawValue: Float,
+    range: ClosedFloatingPointRange<Float>,
+    step: Int
+): Int {
+    val clamped = rawValue.coerceIn(range.start, range.endInclusive)
+    if (step <= 0) return clamped.roundToInt()
+
+    val stepSize = step.toFloat()
+    val index = ((clamped - range.start) / stepSize).roundToInt()
+    val snapped = range.start + (index * stepSize)
+    return snapped.coerceIn(range.start, range.endInclusive).roundToInt()
 }

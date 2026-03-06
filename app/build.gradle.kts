@@ -16,14 +16,14 @@ android {
         applicationId = "com.andongni.lexicardio"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        versionCode = 2
 
         val ciVersionName = (project.findProperty("versionName") as String?)
             ?: System.getenv("VERSION_NAME")
         val ciVersionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull()
             ?: System.getenv("VERSION_CODE")?.toIntOrNull()
 
-        versionName = "0.0.0"
+        versionName = "0.13.3"
         if (!ciVersionName.isNullOrBlank()) versionName = ciVersionName
         if (ciVersionCode != null) versionCode = ciVersionCode
 
@@ -44,7 +44,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

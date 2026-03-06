@@ -77,4 +77,5 @@
     <string name="update_now">Update now</string>
     <string name="maybe_later">Maybe Later</string>
     <string name="today_progress_percent">You’ve completed %1$d%% of today’s progress.</string>
+    <string name="recent_learn_empty">No recent learning records yet.</string>
 </resources>

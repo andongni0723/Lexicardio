@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.andongni.vcblearn.locate.AppLocaleManager
 import kotlinx.coroutines.flow.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.time.LocalDate
 
 private val Context.dataStore by preferencesDataStore("user_prefs")
@@ -29,8 +31,11 @@ val LEARNED_CARD_SETS_COUNT = intPreferencesKey("learned_card_sets_count")
 // Today
 val TODAY_LEARNED_CARDS_COUNT = intPreferencesKey("today_learned_cards_count")
 val TODAY_LEARNED_DAY = longPreferencesKey("today_learned_day")
+val RECENT_LEARN_CARD_SETS = stringPreferencesKey("recent_learn_card_sets")
 
 object UserPrefsDataStore {
+    private val recentLearnJson = Json { ignoreUnknownKeys = true }
+
     fun folderFlow(context: Context): Flow<String> =
         context.dataStore.data.map { it[USER_FOLDER] ?: "No Data" }
 
@@ -66,6 +71,13 @@ object UserPrefsDataStore {
     fun todayLearnedCardsCountFlow(context: Context): Flow<Int> =
         context.dataStore.data.map { it[TODAY_LEARNED_CARDS_COUNT] ?: 0 }
 
+    fun recentLearnCardSetsFlow(context: Context): Flow<List<RecentLearnCardSet>> =
+        context.dataStore.data.map { prefs ->
+            decodeRecentLearnCardSets(prefs[RECENT_LEARN_CARD_SETS]).sortedByDescending {
+                it.lastLearnedAt
+            }
+        }
+
     suspend fun saveFolder(context: Context, path: String) {
         context.dataStore.edit { it[USER_FOLDER] = path }
     }
@@ -97,7 +109,7 @@ object UserPrefsDataStore {
             val current = prefs[LEARNED_CARDS_COUNT] ?: 0
             val today = prefs[TODAY_LEARNED_CARDS_COUNT] ?: 0
             prefs[LEARNED_CARDS_COUNT] = current + amount
-            prefs[TODAY_LEARNED_CARDS_COUNT] = today + amount;
+            prefs[TODAY_LEARNED_CARDS_COUNT] = today + amount
         }
     }
 
@@ -115,8 +127,36 @@ object UserPrefsDataStore {
 
     suspend fun setTodayLearnedDay(context: Context) {
         context.dataStore.edit { prefs ->
-            val current = prefs[TODAY_LEARNED_DAY] ?: 0
             prefs[TODAY_LEARNED_DAY] = LocalDate.now().toEpochDay()
         }
+    }
+
+    suspend fun pushRecentLearnCardSet(
+        context: Context,
+        name: String,
+        uri: String,
+        maxAmount: Int = 10
+    ) {
+        context.dataStore.edit { prefs ->
+            val current = decodeRecentLearnCardSets(prefs[RECENT_LEARN_CARD_SETS])
+            val newRecord = RecentLearnCardSet(
+                name = name,
+                uri = uri,
+                lastLearnedAt = System.currentTimeMillis()
+            )
+
+            val updated = (listOf(newRecord) + current.filterNot { it.uri == uri })
+                .take(maxAmount)
+
+            prefs[RECENT_LEARN_CARD_SETS] = recentLearnJson.encodeToString(updated)
+        }
+    }
+
+    private fun decodeRecentLearnCardSets(raw: String?): List<RecentLearnCardSet> {
+        if (raw.isNullOrBlank()) return emptyList()
+
+        return runCatching {
+            recentLearnJson.decodeFromString<List<RecentLearnCardSet>>(raw)
+        }.getOrDefault(emptyList())
     }
 }

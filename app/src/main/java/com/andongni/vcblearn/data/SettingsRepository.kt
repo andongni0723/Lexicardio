@@ -2,6 +2,7 @@ package com.andongni.vcblearn.data
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import java.time.LocalDateTime
@@ -23,6 +24,7 @@ class SettingsRepository @Inject constructor(
     val todayLearnedDay = UserPrefsDataStore.todayLearnedDayFlow(context)
     val todayLearnedCardsCount = UserPrefsDataStore.todayLearnedCardsCountFlow(context)
     val dailyLearningGoal = UserPrefsDataStore.dailyLearningGoalFlow(context)
+    val recentLearnCardSets = UserPrefsDataStore.recentLearnCardSetsFlow(context)
 
 
     suspend fun saveUserFolder(path: String) {
@@ -76,5 +78,15 @@ class SettingsRepository @Inject constructor(
 
     suspend fun addLearnCardSetsCount(amount: Int) {
         UserPrefsDataStore.addLearnCardSetsCount(context, amount)
+    }
+
+    suspend fun addRecentLearnCardSet(cardSet: JsonEntry) {
+        if (cardSet.name.isBlank() || cardSet.uri == Uri.EMPTY) return
+
+        UserPrefsDataStore.pushRecentLearnCardSet(
+            context = context,
+            name = cardSet.name,
+            uri = cardSet.uri.toString()
+        )
     }
 }

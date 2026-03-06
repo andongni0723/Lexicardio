@@ -96,6 +96,28 @@ fun CardSetGroup(
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun RecentLearnedGroup(
+    navController: NavController,
+    dataManagerModel: DataManagerModel = hiltViewModel()
+) {
+    val recentLearnCardSets by dataManagerModel.recentLearnCardSets.collectAsStateWithLifecycle()
+
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+            .padding(top = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(
+            items = recentLearnCardSets,
+        ) { cardSet ->
+            CardSet(cardSet, navController)
+        }
+    }
+}
+
+@Composable
 fun CardSet(
     cardSetData: JsonEntry,
     navController: NavController

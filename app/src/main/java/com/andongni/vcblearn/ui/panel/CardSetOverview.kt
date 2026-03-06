@@ -196,6 +196,8 @@ fun CardSetOverviewPanel(
             item {
                 Button(
                     onClick = {
+                        viewModel.addRecentLearnCardSet(cardSetData)
+
                         // Save data
                         navController.currentBackStackEntry
                             ?.savedStateHandle
@@ -229,6 +231,8 @@ fun CardSetOverviewPanel(
             item {
                 Button(
                     onClick = {
+                        viewModel.addRecentLearnCardSet(cardSetData)
+
                         // Save data
                         navController.currentBackStackEntry
                             ?.savedStateHandle

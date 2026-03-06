@@ -204,11 +204,19 @@ class DataManager @Inject constructor(
 @HiltViewModel
 open class DataManagerModel @Inject constructor(
     private val dataManager: DataManager,
+    private val settingRepo: SettingsRepository,
 ) : ViewModel() {
 
     val userFolder: StateFlow<String?> =
         dataManager.userFolder
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val recentLearnCardSets: StateFlow<List<JsonEntry>> =
+        settingRepo.recentLearnCardSets
+            .map { list ->
+                list.map { JsonEntry(it.name, it.uri.toUri()) }
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _folders = MutableStateFlow<List<FolderEntry>>(emptyList())
     val folders: StateFlow<List<FolderEntry>> = _folders
@@ -250,6 +258,12 @@ open class DataManagerModel @Inject constructor(
     /** Edit the card set and rename. */
     suspend fun editCardSet(oldUri: Uri, newCardSetJson: CardSetJson) =
         dataManager.editCardSet(oldUri, newCardSetJson)
+
+    fun addRecentLearnCardSet(cardSet: JsonEntry) {
+        viewModelScope.launch {
+            settingRepo.addRecentLearnCardSet(cardSet)
+        }
+    }
 
     suspend fun reloadFolders() =
         _isFoldersRefreshing.refresh { _folders.emit(dataManager.allSubFolder.first()) }

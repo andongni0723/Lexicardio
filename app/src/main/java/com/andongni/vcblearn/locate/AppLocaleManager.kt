@@ -1,15 +1,10 @@
 package com.andongni.vcblearn.locate
 
-import android.app.Activity
-import android.app.LocaleManager
+import android.app.*
 import android.content.Context
-import android.os.Build
-import android.os.LocaleList
+import android.os.*
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContextCompat
-import androidx.core.os.LocaleListCompat
-import java.util.Locale
 import javax.inject.Singleton
 
 data class Language(
@@ -44,7 +39,7 @@ class AppLocaleManager {
         }
 
         Log.d("LocaleManager", "Get:" + (locale?.language ?: getDefaultLanguageCode()))
-        return locale?.language ?: getDefaultLanguageCode();
+        return locale?.language ?: getDefaultLanguageCode()
     }
 
     private fun getDefaultLanguageCode(): String {
