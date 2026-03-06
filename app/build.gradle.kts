@@ -16,14 +16,14 @@ android {
         applicationId = "com.andongni.lexicardio"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
+        versionCode = 4
 
         val ciVersionName = (project.findProperty("versionName") as String?)
             ?: System.getenv("VERSION_NAME")
         val ciVersionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull()
             ?: System.getenv("VERSION_CODE")?.toIntOrNull()
 
-        versionName = "0.13.3"
+        versionName = "0.14.0"
         if (!ciVersionName.isNullOrBlank()) versionName = ciVersionName
         if (ciVersionCode != null) versionCode = ciVersionCode
 
@@ -44,6 +44,9 @@ android {
 
     buildTypes {
         release {
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

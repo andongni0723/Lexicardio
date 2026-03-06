@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.14.0
+更新內容:
+- 新增「最近學習」功能。
+- 新增初次開啟教學設定
+- 重構部份程式碼
+
+Updates:
+- Added "Recent Learned" feature.
+- Added new first-time teaching settings
+- Refactor some code
+
 ## v0.13.1
 更新內容:
 - 新增「編輯卡組」功能。
