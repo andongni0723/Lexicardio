@@ -1,13 +1,13 @@
-# Google Play internal testing releases
+# Google Play closed testing releases
 
 Pushing a new `v*.*.*` tag runs `.github/workflows/android-release.yml`:
 
 1. Run lint and unit tests.
 2. Build the signed APK and Android App Bundle (AAB).
 3. Retain the AAB and R8 mapping as a GitHub Actions artifact for 14 days, and publish the APK on GitHub Releases.
-4. Upload the AAB and mapping to Google Play **internal testing**, with release status `completed`.
+4. Upload the AAB and mapping to Google Play **closed testing**, with release status `completed`.
 
-The workflow also supports **Run workflow** with an optional version name. It defaults to the highest semantic version tag on HEAD, then the version in `app/build.gradle.kts`. Manual runs publish to internal testing and save the build artifact; they do not create a GitHub Release. Both triggers always use `internal`, with no production option. Concurrent release runs are serialized.
+The workflow also supports **Run workflow** with an optional version name. It defaults to the highest semantic version tag on HEAD, then the version in `app/build.gradle.kts`. Manual runs publish to closed testing and save the build artifact; they do not create a GitHub Release. Both triggers always use `alpha` (the default closed testing track), with no production option. Concurrent release runs are serialized.
 
 The GitHub release step updates the APK asset when a release already exists, and replaces its retained workflow artifact when the build job is retried.
 
@@ -43,8 +43,8 @@ The Play upload certificate has been confirmed to match this CI certificate (bot
 
 ## Versioning and triggering
 
-`versionName` comes from the tag without `v`. `versionCode` comes from this workflow's `GITHUB_RUN_NUMBER`. The last known Play version code is 4, and the existing workflow has already reached run 14, so the next run will exceed 4. Continue using the same workflow file and keep its version codes above every bundle already uploaded to Play, including other tracks.
+`versionName` comes from the tag without `v`. `versionCode` comes from this workflow's `GITHUB_RUN_NUMBER`. The first successful automated upload was `v0.15.4` with version code 18 on the internal track. Closed testing releases must also use a higher code; version codes are shared across all Play tracks. Continue using the same workflow file and keep its version codes above every bundle already uploaded to Play, including other tracks.
 
 Use a **new** tag on a commit containing this workflow, for example the next release version. The existing `v0.15.0` tag does not contain Play publishing and must not be moved or recreated. A tag's workflow comes from its tagged commit, so tagging an older branch will not activate this setup.
 
-Internal testing status `completed` activates the release in the internal track; it does not publish to production. Google may still require Console actions or processing before testers receive it. Tester membership and the opt-in link remain managed in Play Console.
+Release status `completed` submits the release to the `alpha` closed testing track; it does not publish to production. Google may require review, Console actions or processing before testers receive it. Tester membership and the opt-in link remain managed in Play Console.

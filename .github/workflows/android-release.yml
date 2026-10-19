@@ -129,7 +129,7 @@ jobs:
 
 
   publish_play:
-    name: Publish to Google Play internal testing
+    name: Publish to Google Play closed testing
     needs: release
     runs-on: ubuntu-latest
     permissions:
@@ -170,7 +170,7 @@ jobs:
           name: play-release-${{ needs.release.outputs.version_tag }}
           path: play-release
 
-      - name: Publish App Bundle to internal testing
+      - name: Publish App Bundle to closed testing
         uses: r0adkll/upload-google-play@935ef9c68bb393a8e6116b1575626a7f5be3a7fb # v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
@@ -178,5 +178,5 @@ jobs:
           releaseFiles: play-release/bundle/release/app-release.aab
           mappingFile: play-release/mapping/release/mapping.txt
           releaseName: ${{ needs.release.outputs.version_tag }}
-          track: internal
+          track: alpha
           status: completed

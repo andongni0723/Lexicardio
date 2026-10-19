@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.15.5
+更新內容:
+- 將 Google Play 自動發佈軌道改為封閉測試（alpha）。
+
+Updates:
+- Changed automatic Google Play publishing to the closed testing track (alpha).
+
 ## v0.15.4
 更新內容:
 - 升級至 Android 16／API 36，修復 Google Play 因 Target SDK 等級不足而拒絕上傳的問題。
