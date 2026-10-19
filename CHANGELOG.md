@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.15.2
+更新內容:
+- 修正 Google Play 發佈設定，使用 PLAY_SERVICE_ACCOUNT_JSON 指定的服務帳戶，不再限制固定 Email。
+
+Updates:
+- Fixed Google Play publishing to use the service account configured in PLAY_SERVICE_ACCOUNT_JSON without requiring a hard-coded account email.
+
 ## v0.15.1
 更新內容:
 - 新增 Google Play 內部測試自動發佈，沿用 v0.15.0 的卡組刪除與測驗版面修正。

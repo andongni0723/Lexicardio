@@ -130,7 +130,7 @@ jobs:
     steps:
       - name: Validate Google Play service account
         env:
-          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON || secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
           python3 - <<'PYTHON'
           import json
@@ -143,17 +143,17 @@ jobs:
 
           raw = os.environ.get("PLAY_SERVICE_ACCOUNT_JSON", "")
           if not raw:
-              fail("Missing GitHub Actions Secret: GOOGLE_PLAY_SERVICE_ACCOUNT_JSON (or PLAY_SERVICE_ACCOUNT_JSON)")
+              fail("Missing GitHub Actions Secret: PLAY_SERVICE_ACCOUNT_JSON")
           try:
               account = json.loads(raw)
           except json.JSONDecodeError:
-              fail("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON must contain valid service account JSON")
+              fail("PLAY_SERVICE_ACCOUNT_JSON must contain valid service account JSON")
           if not isinstance(account, dict):
-              fail("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON must be a JSON object")
+              fail("PLAY_SERVICE_ACCOUNT_JSON must be a JSON object")
           if account.get("type") != "service_account" or not account.get("private_key"):
-              fail("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is not a service account key")
-          if account.get("client_email") != "github-action-release@snapledger-490513.iam.gserviceaccount.com":
-              fail("Google Play service account does not match the configured release account")
+              fail("PLAY_SERVICE_ACCOUNT_JSON is not a service account key")
+          if not isinstance(account.get("client_email"), str) or not account["client_email"].strip():
+              fail("PLAY_SERVICE_ACCOUNT_JSON must include the service account client_email")
           print("Google Play service account configuration validated")
           PYTHON
 
@@ -166,7 +166,7 @@ jobs:
       - name: Publish App Bundle to internal testing
         uses: r0adkll/upload-google-play@935ef9c68bb393a8e6116b1575626a7f5be3a7fb # v1.1.3
         with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON || secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.andongni.lexicardio
           releaseFiles: play-release/bundle/release/app-release.aab
           mappingFile: play-release/mapping/release/mapping.txt

@@ -20,11 +20,9 @@ Keep the existing signing secrets:
 - `ANDROID_KEY_ALIAS`
 - `ANDROID_KEY_PASSWORD`
 
-Add `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` (or `PLAY_SERVICE_ACCOUNT_JSON`, matching the Flutter project convention) containing the complete JSON private key for:
+Add `PLAY_SERVICE_ACCOUNT_JSON` containing the complete JSON private key for the service account authorized to release Lexicardio. The workflow validates the JSON structure and required account fields, then Google Play verifies the account's authentication and application permissions. Its email is not hard-coded in the workflow.
 
-`github-action-release@snapledger-490513.iam.gserviceaccount.com`
-
-Only one of these JSON secrets is needed; `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` takes precedence if both exist. Store the JSON directly as a GitHub Actions repository secret; an email address or base64-encoded JSON is not sufficient. Never commit the JSON, keystore, passwords, or tokens.
+Store the JSON directly as a GitHub Actions repository secret; an email address or base64-encoded JSON is not sufficient. Never commit the JSON, keystore, passwords, or tokens.
 
 ## Google Play setup
 
