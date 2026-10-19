@@ -9,6 +9,8 @@ Pushing a new `v*.*.*` tag runs `.github/workflows/android-release.yml`:
 
 The workflow also supports **Run workflow** with an optional version name. It defaults to the highest semantic version tag on HEAD, then the version in `app/build.gradle.kts`. Manual runs publish to internal testing and save the build artifact; they do not create a GitHub Release. Both triggers always use `internal`, with no production option. Concurrent release runs are serialized.
 
+The GitHub release step updates the APK asset when a release already exists, and replaces its retained workflow artifact when the build job is retried.
+
 The Play job depends on the existing GitHub release job. A Play failure leaves the GitHub release available; rerun the failed Play job after fixing credentials or permissions. Do not rerun a successful upload: Google Play cannot reuse a version code for another bundle.
 
 ## GitHub Actions secrets

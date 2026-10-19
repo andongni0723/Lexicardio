@@ -101,9 +101,10 @@ jobs:
             app/build/outputs/bundle/release/app-release.aab
             app/build/outputs/mapping/release/mapping.txt
           if-no-files-found: error
+          overwrite: true
           retention-days: 14
 
-      - name: Create GitHub Release (changelog for tag) + upload APK
+      - name: Create or update GitHub Release and upload APK
         if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -114,11 +115,17 @@ jobs:
             $0 ~ "^##[[:space:]]+v" { if (found) exit }
             found { print }
           ' CHANGELOG.md)
-          mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/lexicardio_${{ env.VERSION_NAME }}_release.apk
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
-            --notes "$NOTES" \
-            app/build/outputs/apk/release/*.apk
+          APK_PATH="app/build/outputs/apk/release/lexicardio_${VERSION_NAME}_release.apk"
+          mv app/build/outputs/apk/release/app-release.apk "$APK_PATH"
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$APK_PATH" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --verify-tag \
+              --title "$GITHUB_REF_NAME" \
+              --notes "$NOTES" \
+              "$APK_PATH"
+          fi
 
 
   publish_play:

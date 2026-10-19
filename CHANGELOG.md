@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.15.3
+更新內容:
+- 修正重跑發佈流程時因 GitHub Release 已存在而中斷的問題，改為更新既有 APK 附件。
+
+Updates:
+- Fixed release retries failing on an existing GitHub Release by updating its APK asset.
+
 ## v0.15.2
 更新內容:
 - 修正 Google Play 發佈設定，使用 PLAY_SERVICE_ACCOUNT_JSON 指定的服務帳戶，不再限制固定 Email。
