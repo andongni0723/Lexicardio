@@ -137,19 +137,23 @@ jobs:
           import os
           import sys
 
+          def fail(message):
+              print(f"::error::{message}", flush=True)
+              sys.exit(1)
+
           raw = os.environ.get("PLAY_SERVICE_ACCOUNT_JSON", "")
           if not raw:
-              sys.exit("Missing GitHub Actions Secret: GOOGLE_PLAY_SERVICE_ACCOUNT_JSON (or PLAY_SERVICE_ACCOUNT_JSON)")
+              fail("Missing GitHub Actions Secret: GOOGLE_PLAY_SERVICE_ACCOUNT_JSON (or PLAY_SERVICE_ACCOUNT_JSON)")
           try:
               account = json.loads(raw)
           except json.JSONDecodeError:
-              sys.exit("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON must contain valid service account JSON")
+              fail("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON must contain valid service account JSON")
           if not isinstance(account, dict):
-              sys.exit("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON must be a JSON object")
+              fail("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON must be a JSON object")
           if account.get("type") != "service_account" or not account.get("private_key"):
-              sys.exit("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is not a service account key")
+              fail("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is not a service account key")
           if account.get("client_email") != "github-action-release@snapledger-490513.iam.gserviceaccount.com":
-              sys.exit("Google Play service account does not match the configured release account")
+              fail("Google Play service account does not match the configured release account")
           print("Google Play service account configuration validated")
           PYTHON
 
