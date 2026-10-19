@@ -78,4 +78,6 @@
     <string name="maybe_later">Maybe Later</string>
     <string name="today_progress_percent">You’ve completed %1$d%% of today’s progress.</string>
     <string name="recent_learn_empty">No recent learning records yet.</string>
+    <string name="delete_card_set_confirmation">Delete “%1$s”? This permanently deletes the card set and all its cards. This cannot be undone.</string>
+    <string name="delete_card_set_failed">Could not delete the card set. Check folder access and try again.</string>
 </resources>

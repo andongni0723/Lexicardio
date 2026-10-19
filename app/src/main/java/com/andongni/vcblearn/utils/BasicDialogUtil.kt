@@ -51,3 +51,32 @@ fun ConfirmLeaveDialog(
         },
     )
 }
+
+@Composable
+fun ConfirmDeleteCardSetDialog(
+    visible: Boolean,
+    cardSetName: String,
+    deleting: Boolean = false,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    if (!visible) return
+
+    AlertDialog(
+        onDismissRequest = { if (!deleting) onDismiss() },
+        title = { Text(stringResource(R.string.delete_card_set)) },
+        text = { Text(stringResource(R.string.delete_card_set_confirmation, cardSetName)) },
+        dismissButton = {
+            TextButton(enabled = !deleting, onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = !deleting,
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                onClick = onConfirm
+            ) { Text(stringResource(R.string.delete_card_set)) }
+        }
+    )
+}

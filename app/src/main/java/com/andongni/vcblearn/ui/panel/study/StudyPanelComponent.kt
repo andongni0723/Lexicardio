@@ -1,6 +1,8 @@
 package com.andongni.vcblearn.ui.panel.study
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +31,7 @@ import com.andongni.vcblearn.ui.theme.LightErrorColor
 fun QuestionContent(
     uiState: QuestionUiState,
     answerType: AnswerType,
+    modifier: Modifier = Modifier,
     ttsViewModel: TtsViewModel = hiltViewModel(),
     onStateChange: (QuestionUiState) -> Unit = {},
     onNext: () -> Unit = {}
@@ -39,136 +42,148 @@ fun QuestionContent(
         is QuestionUiState.Written -> uiState.userText.isNotBlank()
     }
 
-    Text(uiState.data.title, style = MaterialTheme.typography.headlineMedium)
+    val scrollState = remember(uiState.data) { ScrollState(0) }
+    val focusManager = LocalFocusManager.current
 
-    Spacer(Modifier.height(36.dp))
+    Column(modifier = modifier.fillMaxSize()) {
+        // Only the question and answers scroll. Reserve space for the action below.
+        Column(
+            modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(scrollState)
+                .padding(bottom = 16.dp)
+        ) {
+            Text(uiState.data.title, style = MaterialTheme.typography.headlineMedium)
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        when (uiState) {
-            is QuestionUiState.TrueFalse -> {
-                Text(uiState.data.shownText, style = MaterialTheme.typography.headlineMedium)
+            Spacer(Modifier.height(36.dp))
 
-                Spacer(Modifier.height(36.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                when (uiState) {
+                    is QuestionUiState.TrueFalse -> {
+                        Text(uiState.data.shownText, style = MaterialTheme.typography.headlineMedium)
 
-                val show = listOf(true, false)
-                show.forEach { option ->
-                    val next = uiState.copy(userAnswer = option)
-                    OptionBox(
-                        text =
-                            if (option) stringResource(R.string.true_word)
-                            else stringResource(R.string.false_word),
-                        state = when (uiState.userAnswer) {
-                            null -> OptionUiState.None
-                            option ->
-                                if (next.isCorrect) OptionUiState.Correct
-                                else OptionUiState.Wrong
+                        Spacer(Modifier.height(36.dp))
 
-                            else -> OptionUiState.None
-                        },
-                        enable = uiState.userAnswer == null,
-                        onClick = {
-                            onStateChange(next);
+                        val show = listOf(true, false)
+                        show.forEach { option ->
+                            val next = uiState.copy(userAnswer = option)
+                            OptionBox(
+                                text =
+                                    if (option) stringResource(R.string.true_word)
+                                    else stringResource(R.string.false_word),
+                                state = when (uiState.userAnswer) {
+                                    null -> OptionUiState.None
+                                    option ->
+                                        if (next.isCorrect) OptionUiState.Correct
+                                        else OptionUiState.Wrong
+
+                                    else -> OptionUiState.None
+                                },
+                                enable = uiState.userAnswer == null,
+                                onClick = {
+                                    onStateChange(next);
+                                }
+                            )
                         }
-                    )
-                }
-            }
+                    }
 
-            is QuestionUiState.MultipleChoice -> {
-                uiState.data.options.forEachIndexed { idx, option ->
-                    val next = uiState.copy(selectedIndex = idx)
-                    OptionBox(
-                        text = option,
-                        state = when {
-                            !answered -> OptionUiState.None
+                    is QuestionUiState.MultipleChoice -> {
+                        uiState.data.options.forEachIndexed { idx, option ->
+                            val next = uiState.copy(selectedIndex = idx)
+                            OptionBox(
+                                text = option,
+                                state = when {
+                                    !answered -> OptionUiState.None
 
-                            // User Selected -> Show by this option is correct answer
-                            idx == uiState.selectedIndex ->
-                                if (next.isCorrect) OptionUiState.Correct
-                                else OptionUiState.Wrong
+                                    // User Selected -> Show by this option is correct answer
+                                    idx == uiState.selectedIndex ->
+                                        if (next.isCorrect) OptionUiState.Correct
+                                        else OptionUiState.Wrong
 
-                            // Correct Answer -> show when after answer
-                            !uiState.isCorrect && idx == uiState.data.correctIndex ->
-                                OptionUiState.Correct
+                                    // Correct Answer -> show when after answer
+                                    !uiState.isCorrect && idx == uiState.data.correctIndex ->
+                                        OptionUiState.Correct
 
-                            else -> OptionUiState.None
-                        },
-                        enable = uiState.selectedIndex == null,
-                        onClick = {
-                            onStateChange(next);
-                            val speakWord =
+                                    else -> OptionUiState.None
+                                },
+                                enable = uiState.selectedIndex == null,
+                                onClick = {
+                                    onStateChange(next);
+                                    val speakWord =
+                                        if (answerType == AnswerType.Word)
+                                            uiState.data.options[uiState.data.correctIndex] else
+                                            uiState.data.title
+                                    ttsViewModel.speak(speakWord)
+                                }
+                            )
+                        }
+                    }
+
+                    is QuestionUiState.Written -> {
+                        var userInput by remember(uiState.data) { mutableStateOf("") }
+                        OptionInput(
+                            text = userInput,
+                            data = uiState,
+                            onValueChange = { userInput = it },
+                            onDone = {
+                                focusManager.clearFocus()
+                                onStateChange(uiState.copy(userText = userInput.trim()))
+                                userInput = ""
                                 if (answerType == AnswerType.Word)
-                                    uiState.data.options[uiState.data.correctIndex] else
-                                    uiState.data.title
-                            ttsViewModel.speak(speakWord)
-                        }
-                    )
+                                    ttsViewModel.speak(uiState.data.correctText)
+                            },
+                            state = when (uiState.userText) {
+                                "" -> OptionUiState.None
+                                else ->
+                                    if (uiState.isCorrect) OptionUiState.Correct
+                                    else OptionUiState.Wrong
+                            },
+                        )
+                    }
                 }
-            }
-
-            is QuestionUiState.Written -> {
-                var userInput by remember { mutableStateOf("") }
-                OptionInput(
-                    text = userInput,
-                    data = uiState,
-                    onValueChange = { userInput = it },
-                    onDone = {
-                        onStateChange(uiState.copy(userText = userInput.trim()))
-                        userInput = ""
-                        if (answerType == AnswerType.Word)
-                            ttsViewModel.speak(uiState.data.correctText)
-                    },
-                    state = when (uiState.userText) {
-                        "" -> OptionUiState.None
-                        else ->
-                            if (uiState.isCorrect) OptionUiState.Correct
-                            else OptionUiState.Wrong
-                    },
-                )
             }
         }
-    }
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        // I'm Correct Button
-        if (uiState is QuestionUiState.Written) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            // I'm Correct Button
+            if (uiState is QuestionUiState.Written) {
 
-            val showICorrect = uiState.userText.isNotBlank() && !uiState.isCorrect
+                val showICorrect = uiState.userText.isNotBlank() && !uiState.isCorrect
 
+                AnimatedVisibility(
+                    visible = showICorrect,
+                    modifier = Modifier.fillMaxWidth(),
+                    enter = fadeIn(),
+                    exit = ExitTransition.None
+                ) {
+                    val next = uiState.copy(userText = uiState.data.correctText)
+                    TextButton(
+                        onClick = { onStateChange(next) },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("I'm Correct", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+
+            // Next Button
             AnimatedVisibility(
-                visible = showICorrect,
+                visible = answered,
                 modifier = Modifier.fillMaxWidth(),
                 enter = fadeIn(),
                 exit = ExitTransition.None
             ) {
-                val next = uiState.copy(userText = uiState.data.correctText)
-                TextButton(
-                    onClick = { onStateChange(next) },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text("I'm Correct", color = MaterialTheme.colorScheme.primary)
-                }
+                Button(
+                    onClick = onNext,
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Next") }
             }
-        }
-
-        // Next Button
-        AnimatedVisibility(
-            visible = answered,
-            modifier = Modifier.fillMaxWidth(),
-            enter = fadeIn(),
-            exit = ExitTransition.None
-        ) {
-            Button(
-                onClick = onNext,
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Next") }
         }
     }
 }
@@ -196,7 +211,8 @@ private fun OptionBox(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
+            .height(IntrinsicSize.Min)
+            .heightIn(min = 80.dp)
     ) {
 
         // Correct/Wrong
@@ -221,7 +237,7 @@ private fun OptionBox(
         }
 
         OutlinedButton(
-            modifier = Modifier.fillMaxHeight(),
+            modifier = Modifier.weight(1f).heightIn(min = 80.dp),
             onClick = onClick,
             enabled = enable,
             shape = RoundedCornerShape(

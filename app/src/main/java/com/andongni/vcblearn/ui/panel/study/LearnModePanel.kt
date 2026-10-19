@@ -121,9 +121,11 @@ fun LearnModePanel(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner)
+                .consumeWindowInsets(inner)
+                .imePadding()
                 .padding(horizontal = 16.dp)
-                .padding(top = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(40.dp),
+                .padding(top = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -177,6 +179,7 @@ fun LearnModePanel(
 
             if (!showBatchEnd) {
                 QuestionContent(
+                    modifier = Modifier.weight(1f),
                     uiState = currentQuestion,
                     answerType = settingDetail.answerType,
                     onStateChange = { newUI ->

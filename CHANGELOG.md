@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.15.0
+更新內容:
+- 新增卡組刪除功能與刪除確認對話框，並同步更新卡組列表及最近學習紀錄。
+- 修復考試與學習模式長文字選項被裁切的問題；題目與選項可捲動，Next 按鈕固定顯示於底部。
+
+Updates:
+- Added card set deletion with confirmation and updates to card set lists and recent learning history.
+- Fixed clipped long answers in test and learn modes; questions and answers scroll while the Next button stays at the bottom.
+
 ## v0.14.0
 更新內容:
 - 新增「最近學習」功能。

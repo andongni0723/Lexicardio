@@ -76,8 +76,10 @@ class DataManager @Inject constructor(
             .map { FolderEntry(it.name ?: "(Unnamed)", it.uri) }
     }
 
-    val allJsonFiles: Flow<List<JsonEntry>> = userRoot.map { root ->
-        if (root == null) return@map emptyList()
+    private val cardSetsRevision = MutableStateFlow(0L)
+
+    val allJsonFiles: Flow<List<JsonEntry>> = userRoot.combine(cardSetsRevision) { root, _ ->
+        if (root == null) return@combine emptyList()
 
         buildList {
             addAll(root.listFiles().toJsonEntries())
@@ -88,13 +90,12 @@ class DataManager @Inject constructor(
                     addAll(dir.listFiles().toJsonEntries())
                 }
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
-     fun jsonInFolder(folderUri: String): Flow<List<JsonEntry>> =
-        flow {
+    fun jsonInFolder(folderUri: String): Flow<List<JsonEntry>> =
+        cardSetsRevision.map {
             val dir = DocumentFile.fromTreeUri(context, folderUri.toUri())
-
-            emit(dir?.listFiles()?.toJsonEntries() ?: emptyList())
+            dir?.listFiles()?.toJsonEntries() ?: emptyList()
         }.flowOn(Dispatchers.IO)
 
     suspend fun loadCardSetJson(uri: Uri): CardSetJson =
@@ -175,6 +176,27 @@ class DataManager @Inject constructor(
         } ?: return@withContext false
 
         true
+    }
+
+    suspend fun deleteCardSet(uri: Uri): Boolean = withContext(Dispatchers.IO) {
+        val deleted = try {
+            val file = DocumentFile.fromSingleUri(context, uri)
+            file != null && file.isFile && file.delete()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            Log.e("DataManager", "Card set deletion failed", e)
+            false
+        }
+        if (deleted) {
+            cardSetsRevision.update { it + 1 }
+            try {
+                settingRepo.removeRecentLearnCardSet(uri)
+            } catch (e: java.io.IOException) {
+                // The file has already been deleted; do not offer a misleading retry.
+                Log.e("DataManager", "Could not clear recent card set", e)
+            }
+        }
+        deleted
     }
 
     /** Converts an array of [DocumentFile]s to a list of [JsonEntry]s. */
@@ -258,6 +280,8 @@ open class DataManagerModel @Inject constructor(
     /** Edit the card set and rename. */
     suspend fun editCardSet(oldUri: Uri, newCardSetJson: CardSetJson) =
         dataManager.editCardSet(oldUri, newCardSetJson)
+
+    suspend fun deleteCardSet(uri: Uri): Boolean = dataManager.deleteCardSet(uri)
 
     fun addRecentLearnCardSet(cardSet: JsonEntry) {
         viewModelScope.launch {

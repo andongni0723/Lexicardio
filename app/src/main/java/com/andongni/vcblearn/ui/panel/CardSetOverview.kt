@@ -1,7 +1,6 @@
 package com.andongni.vcblearn.ui.panel
 
 import android.content.ClipData
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +31,7 @@ import com.andongni.vcblearn.route.NavRoute
 import com.andongni.vcblearn.route.encodeBase64Uri
 import com.andongni.vcblearn.ui.component.TtsViewModel
 import com.andongni.vcblearn.ui.theme.LexicardioTheme
+import com.andongni.vcblearn.utils.ConfirmDeleteCardSetDialog
 import kotlinx.coroutines.launch
 
 //region Preview
@@ -55,7 +55,6 @@ fun CardSetOverviewPanel(
     viewModel: DataManagerModel = hiltViewModel(),
     ttsViewModel: TtsViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val updatedFlagFlow =
         navController.currentBackStackEntry
@@ -75,6 +74,33 @@ fun CardSetOverviewPanel(
 
     var menuExpanded by remember { mutableStateOf(false) }
     val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    var deleting by remember { mutableStateOf(false) }
+    val deleteFailedMessage = stringResource(R.string.delete_card_set_failed)
+
+    ConfirmDeleteCardSetDialog(
+        visible = showDeleteDialog,
+        cardSetName = cardSetDetail.name,
+        deleting = deleting,
+        onDismiss = { showDeleteDialog = false },
+        onConfirm = {
+            deleting = true
+            scope.launch {
+                try {
+                    if (viewModel.deleteCardSet(cardSetData.uri)) {
+                        showDeleteDialog = false
+                        navController.popBackStack()
+                    } else {
+                        showDeleteDialog = false
+                        snackBarHostState.showSnackbar(deleteFailedMessage)
+                    }
+                } finally {
+                    deleting = false
+                }
+            }
+        }
+    )
 
     Scaffold(
         snackbarHost = {
@@ -142,7 +168,7 @@ fun CardSetOverviewPanel(
                                 text = { Text(stringResource(R.string.delete_card_set),
                                     color = MaterialTheme.colorScheme.error) },
                                 onClick = {
-                                    Toast.makeText(context, "Coming soon.", Toast.LENGTH_SHORT).show()
+                                    showDeleteDialog = true
                                     menuExpanded = false
                                 },
                                 leadingIcon = {

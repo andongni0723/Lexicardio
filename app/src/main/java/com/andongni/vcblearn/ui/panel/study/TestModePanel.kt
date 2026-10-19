@@ -102,10 +102,12 @@ fun TestModePanel(
 
         Column(
             modifier = Modifier
-            .fillMaxSize()
-            .padding(inner)
-            .padding(horizontal = 16.dp).padding(top = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(40.dp),
+                .fillMaxSize()
+                .padding(inner)
+                .consumeWindowInsets(inner)
+                .imePadding()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -120,6 +122,7 @@ fun TestModePanel(
             }
 
             QuestionContent(
+                modifier = Modifier.weight(1f),
                 uiState = thisQuestion,
                 answerType = settingDetail.answerType,
                 onStateChange = { newUI ->

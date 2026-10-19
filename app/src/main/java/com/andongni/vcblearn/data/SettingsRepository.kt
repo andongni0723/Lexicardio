@@ -80,6 +80,10 @@ class SettingsRepository @Inject constructor(
         UserPrefsDataStore.addLearnCardSetsCount(context, amount)
     }
 
+    suspend fun removeRecentLearnCardSet(uri: Uri) {
+        UserPrefsDataStore.removeRecentLearnCardSet(context, uri.toString())
+    }
+
     suspend fun addRecentLearnCardSet(cardSet: JsonEntry) {
         if (cardSet.name.isBlank() || cardSet.uri == Uri.EMPTY) return
 

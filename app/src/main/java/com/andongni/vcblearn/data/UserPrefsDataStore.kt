@@ -152,6 +152,14 @@ object UserPrefsDataStore {
         }
     }
 
+    suspend fun removeRecentLearnCardSet(context: Context, uri: String) {
+        context.dataStore.edit { prefs ->
+            val updated = decodeRecentLearnCardSets(prefs[RECENT_LEARN_CARD_SETS])
+                .filterNot { it.uri == uri }
+            prefs[RECENT_LEARN_CARD_SETS] = recentLearnJson.encodeToString(updated)
+        }
+    }
+
     private fun decodeRecentLearnCardSets(raw: String?): List<RecentLearnCardSet> {
         if (raw.isNullOrBlank()) return emptyList()
 

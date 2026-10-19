@@ -79,4 +79,6 @@
     <string name="maybe_later">下次再說</string>
     <string name="today_progress_percent">你已完成今日 %1$d%% 的進度</string>
     <string name="recent_learn_empty">目前還沒有最近學習紀錄。</string>
+    <string name="delete_card_set_confirmation">確定刪除「%1$s」嗎？這會永久刪除卡組及所有卡片，且無法復原。</string>
+    <string name="delete_card_set_failed">無法刪除卡組，請確認資料夾存取權限後再試一次。</string>
 </resources>
