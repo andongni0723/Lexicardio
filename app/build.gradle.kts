@@ -23,7 +23,7 @@ android {
         val ciVersionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull()
             ?: System.getenv("VERSION_CODE")?.toIntOrNull()
 
-        versionName = "0.15.0"
+        versionName = "0.15.1"
         if (!ciVersionName.isNullOrBlank()) versionName = ciVersionName
         if (ciVersionCode != null) versionCode = ciVersionCode
 

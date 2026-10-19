@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.15.1
+更新內容:
+- 新增 Google Play 內部測試自動發佈，沿用 v0.15.0 的卡組刪除與測驗版面修正。
+- 發佈時同時建立簽署 APK 與 AAB，並保留 R8 對照檔。
+
+Updates:
+- Added automatic Google Play internal testing releases, including the card set deletion and quiz layout fixes from v0.15.0.
+- Release builds now produce signed APKs and App Bundles and retain the R8 mapping.
+
 ## v0.15.0
 更新內容:
 - 新增卡組刪除功能與刪除確認對話框，並同步更新卡組列表及最近學習紀錄。
