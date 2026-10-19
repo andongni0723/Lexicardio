@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.15.4
+更新內容:
+- 升級至 Android 16／API 36，修復 Google Play 因 Target SDK 等級不足而拒絕上傳的問題。
+
+Updates:
+- Updated compile and target SDK to Android 16 (API 36) to address Google Play rejecting the previous target SDK.
+
 ## v0.15.3
 更新內容:
 - 修正重跑發佈流程時因 GitHub Release 已存在而中斷的問題，改為更新既有 APK 附件。

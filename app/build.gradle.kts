@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.andongni.vcblearn"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.andongni.lexicardio"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 4
 
         val ciVersionName = (project.findProperty("versionName") as String?)
@@ -23,7 +23,7 @@ android {
         val ciVersionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull()
             ?: System.getenv("VERSION_CODE")?.toIntOrNull()
 
-        versionName = "0.15.3"
+        versionName = "0.15.4"
         if (!ciVersionName.isNullOrBlank()) versionName = ciVersionName
         if (ciVersionCode != null) versionCode = ciVersionCode
 
